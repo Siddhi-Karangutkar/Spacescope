@@ -13,15 +13,16 @@ const Community = () => {
         const saved = localStorage.getItem('spacescope_reports');
         if (saved) {
             let parsed = JSON.parse(saved);
-            // MIGRATION: Fix the accidental car image in user's cache
+            // MIGRATION: Fix the accidental car image or update to custom aurora
             const oldCarUrl = "https://images.unsplash.com/photo-1573074617613-fc8ef27eaa2f?auto=format&fit=crop&q=80&w=800";
-            const newAuroraUrl = "https://images.unsplash.com/photo-1531366930472-358045768e82?auto=format&fit=crop&q=80&w=800";
+            const oldAuroraUrl = "https://images.unsplash.com/photo-1531366930472-358045768e82?auto=format&fit=crop&q=80&w=800";
+            const customAuroraUrl = "/assets/community/aurora_fix.png";
 
             let updated = false;
             parsed = parsed.map(r => {
-                if (r.images && r.images.includes(oldCarUrl)) {
+                if (r.images && (r.images.includes(oldCarUrl) || r.images.includes(oldAuroraUrl))) {
                     updated = true;
-                    return { ...r, images: r.images.map(img => img === oldCarUrl ? newAuroraUrl : img) };
+                    return { ...r, images: r.images.map(img => (img === oldCarUrl || img === oldAuroraUrl) ? customAuroraUrl : img) };
                 }
                 return r;
             });
@@ -43,7 +44,7 @@ const Community = () => {
                     status: "APPROVED",
                     category: "Observation",
                     timestamp: new Date(Date.now() - 86400000).toISOString(),
-                    images: ["https://images.unsplash.com/photo-1531366930472-358045768e82?auto=format&fit=crop&q=80&w=800"]
+                    images: ["/assets/community/aurora_fix.png"]
                 },
                 {
                     id: 2,
