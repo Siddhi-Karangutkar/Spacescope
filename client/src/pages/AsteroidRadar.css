@@ -1,0 +1,309 @@
+.asteroid-radar-container {
+    padding: 100px 2rem 2rem;
+    min-height: 100vh;
+}
+
+.radar-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Visualization Panel */
+.radar-visual-panel {
+    grid-row: span 2;
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+}
+
+.radar-display {
+    flex: 1;
+    position: relative;
+    background: radial-gradient(circle at center, #0a0a0a 0%, #000 100%);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 1rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.earth-center {
+    width: 20px;
+    height: 20px;
+    background: #4caf50;
+    border-radius: 50%;
+    box-shadow: 0 0 15px #4caf50;
+    position: absolute;
+    z-index: 10;
+}
+
+.radar-circle {
+    position: absolute;
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.c1 {
+    width: 100px;
+    height: 100px;
+}
+
+.c2 {
+    width: 200px;
+    height: 200px;
+}
+
+.c3 {
+    width: 300px;
+    height: 300px;
+}
+
+.radar-sweep {
+    position: absolute;
+    width: 50%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, rgba(33, 150, 243, 0.5) 100%);
+    top: 50%;
+    left: 50%;
+    transform-origin: left center;
+    animation: radar-spin 4s linear infinite;
+    z-index: 1;
+}
+
+@keyframes radar-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.asteroid-dot {
+    position: absolute;
+    background: #ccc;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    /* transform is handled inline for x,y */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 5;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+}
+
+.asteroid-dot.hazard {
+    background: #ff4444;
+    box-shadow: 0 0 8px #f00;
+}
+
+.asteroid-dot.selected {
+    border: 2px solid #fff;
+    box-shadow: 0 0 15px var(--accent-primary);
+    transform: scale(1.5);
+    /* Scale logic needs to combine with translate, handled via CSS var or class wrapper ideally, simpler here just outline */
+    z-index: 20;
+}
+
+/* Legend */
+.radar-legend {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    font-size: 0.9rem;
+    padding-top: 0.5rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.dot.safe {
+    background: #ccc;
+}
+
+.dot.hazard {
+    background: #ff4444;
+}
+
+.dot.selected {
+    border: 2px solid #fff;
+    background: transparent;
+}
+
+
+/* Detail Panel */
+.detail-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.asteroid-name {
+    font-size: 1.8rem;
+    font-family: var(--font-display);
+    margin-bottom: 0.5rem;
+}
+
+.badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.detail-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.detail-item .label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.detail-item .value {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.jpl-link {
+    color: var(--accent-primary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    display: inline-block;
+}
+
+.jpl-link:hover {
+    text-decoration: underline;
+}
+
+/* Summary Panel */
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.stat-row:last-child {
+    border-bottom: none;
+}
+
+.stat-val {
+    font-weight: 700;
+    font-family: monospace;
+}
+
+.text-sm {
+    font-size: 0.9rem;
+}
+
+/* List Panel */
+.list-panel {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.asteroid-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.list-item {
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.list-item:hover,
+.list-item.active {
+    background: rgba(255, 255, 255, 0.1);
+    border-left: 3px solid var(--accent-primary);
+}
+
+.hazard-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.hazard-dot.safe {
+    background: #4caf50;
+}
+
+.hazard-dot.hazard {
+    background: #ff4444;
+    box-shadow: 0 0 5px #ff4444;
+}
+
+
+@media (max-width: 900px) {
+    .radar-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.text-accent {
+    color: var(--accent-primary);
+}
+
+.text-xs {
+    font-size: 0.75rem;
+}
+
+.mt-1 {
+    margin-top: 0.25rem;
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: .5;
+    }
+}

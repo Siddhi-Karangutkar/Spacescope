@@ -1,0 +1,47 @@
+.dashboard-container {
+    padding: 100px 2rem 2rem;
+    /* Top padding for Navbar */
+    min-height: 100vh;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.widget {
+    padding: 2rem;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+}
+
+.weather-summary-widget {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+    border: 1px solid var(--accent-glow);
+}
+
+.summary-status {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 1rem 0;
+    font-family: var(--font-display);
+}
+
+.view-details-link {
+    font-size: 1rem;
+    color: var(--accent-primary);
+    text-decoration: none;
+    margin-top: 1rem;
+    font-weight: 500;
+}
+
+.view-details-link:hover {
+    text-decoration: underline;
+}

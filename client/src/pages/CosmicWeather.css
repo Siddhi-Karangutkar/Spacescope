@@ -1,0 +1,181 @@
+.cosmic-weather-container {
+    padding: 100px 2rem 2rem;
+    min-height: 100vh;
+}
+
+.page-title {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.weather-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.weather-card {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.weather-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border-color: var(--accent-primary);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+}
+
+.card-icon {
+    color: var(--accent-secondary);
+}
+
+.card-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    font-family: var(--font-display);
+}
+
+.unit {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+
+.card-desc {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.card-status {
+    font-size: 1.25rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.wide-card {
+    grid-column: span 1;
+}
+
+@media (min-width: 1024px) {
+    .wide-card {
+        grid-column: span 2;
+    }
+}
+
+.flares-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.flare-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+}
+
+.flare-class {
+    font-weight: 700;
+    font-family: var(--font-display);
+}
+
+.text-red-500 {
+    color: #ef4444;
+}
+
+.text-red-400 {
+    color: #f87171;
+}
+
+.text-green-400 {
+    color: #4ade80;
+}
+
+.text-yellow-400 {
+    color: #facc15;
+}
+
+.text-gray-400 {
+    color: #9ca3af;
+}
+
+.loading-screen {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-family: var(--font-display);
+    animation: pulse 2s infinite;
+}
+
+/* Impact Meter */
+.impact-meter-card {
+    grid-column: span 2;
+    /* Span across grid if possible */
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.stress-level {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 0.5rem;
+    letter-spacing: 0.1em;
+}
+
+.impact-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr 1fr;
+}
+
+.impact-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.impact-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+.impact-val {
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .impact-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .impact-meter-card {
+        grid-column: auto;
+    }
+}
+
+/* Animations */
