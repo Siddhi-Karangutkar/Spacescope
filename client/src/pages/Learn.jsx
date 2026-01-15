@@ -358,58 +358,50 @@ const PlanetExplorer = ({ onBack }) => {
     const planets = [
         {
             name: "Mercury",
-            image: "https://images-assets.nasa.gov/image/PIA15162/PIA15162~orig.jpg",
-            glow: "rgba(165, 165, 165, 0.4)",
+            color: "linear-gradient(135deg, #a5a5a5, #5f5f5f)",
             desc: "The smallest planet in our solar system and closest to the Sun. It is only slightly larger than Earth's Moon.",
             stats: { type: "Terrestrial", moons: 0, day: "59 Earth days", year: "88 Earth days" }
         },
         {
             name: "Venus",
-            image: "https://images-assets.nasa.gov/image/PIA00271/PIA00271~orig.jpg",
-            glow: "rgba(230, 194, 41, 0.4)",
+            color: "linear-gradient(135deg, #e6c229, #d1a000)",
             desc: "Spinning in the opposite direction to most planets, Venus is the hottest planet in our solar system.",
             stats: { type: "Terrestrial", moons: 0, day: "243 Earth days", year: "225 Earth days" }
         },
         {
             name: "Earth",
-            image: "https://images-assets.nasa.gov/image/AS17-148-22727/AS17-148-22727~orig.jpg",
-            glow: "rgba(33, 150, 243, 0.5)",
+            color: "linear-gradient(135deg, #2196f3, #4caf50)",
             desc: "Our home planet is the only place we know of so far that's inhabited by living things.",
             stats: { type: "Terrestrial", moons: 1, day: "24 hours", year: "365.25 days" }
         },
         {
             name: "Mars",
-            image: "https://images-assets.nasa.gov/image/PIA02653/PIA02653~orig.jpg",
-            glow: "rgba(255, 87, 34, 0.4)",
+            color: "linear-gradient(135deg, #ff5722, #c62828)",
             desc: "Mars is a dusty, cold, desert world with a very thin atmosphere. It is also a dynamic planet with seasons.",
             stats: { type: "Terrestrial", moons: 2, day: "24.6 hours", year: "687 Earth days" }
         },
         {
             name: "Jupiter",
-            image: "https://images-assets.nasa.gov/image/PIA04866/PIA04866~orig.jpg",
-            glow: "rgba(212, 163, 115, 0.4)",
+            color: "linear-gradient(135deg, #d4a373, #a2724e)",
             desc: "Jupiter has more than double the mass of all the other planets combined. The Great Red Spot is a centuries-old storm.",
             stats: { type: "Gas Giant", moons: 95, day: "10 hours", year: "12 Earth years" }
         },
         {
             name: "Saturn",
-            image: "https://images-assets.nasa.gov/image/PIA01383/PIA01383~orig.jpg",
+            color: "linear-gradient(135deg, #ead18d, #cfa855)",
             hasRings: true,
-            glow: "rgba(234, 209, 141, 0.4)",
             desc: "Adorned with a dazzling, complex system of icy rings, Saturn is unique in our solar system.",
             stats: { type: "Gas Giant", moons: 146, day: "10.7 hours", year: "29 Earth years" }
         },
         {
             name: "Uranus",
-            image: "https://images-assets.nasa.gov/image/PIA18182/PIA18182~orig.jpg",
-            glow: "rgba(0, 188, 212, 0.4)",
+            color: "linear-gradient(135deg, #00bcd4, #0097a7)",
             desc: "Uranus rotates at a nearly 90-degree angle from the plane of its orbit. This unique tilt makes it spin on its side.",
             stats: { type: "Ice Giant", moons: 28, day: "17 hours", year: "84 Earth years" }
         },
         {
             name: "Neptune",
-            image: "https://images-assets.nasa.gov/image/PIA01492/PIA01492~orig.jpg",
-            glow: "rgba(63, 81, 181, 0.4)",
+            color: "linear-gradient(135deg, #3f51b5, #1a237e)",
             desc: "Neptune is dark, cold and whipped by supersonic winds. It was the first planet located through mathematical calculations.",
             stats: { type: "Ice Giant", moons: 16, day: "16 hours", year: "165 Earth years" }
         }
@@ -426,15 +418,12 @@ const PlanetExplorer = ({ onBack }) => {
                 <div className="planet-visual-stage">
                     <div className="planet-3d-container">
                         <div
-                            className={`planet-sphere real-texture ${current.hasRings ? 'with-rings' : ''}`}
-                            style={{
-                                boxShadow: `0 0 50px ${current.glow}, inset -10px -10px 40px rgba(0,0,0,0.8)`
-                            }}
+                            className={`planet-sphere ${current.hasRings ? 'with-rings' : ''}`}
+                            style={{ background: current.color }}
                         >
-                            <img src={current.image} alt={current.name} className="planet-image-texture" />
                             {/* CSS Rings based on boolean */}
                             {current.hasRings && <div className="planet-rings"></div>}
-                            <div className="planet-shadow-overlay"></div>
+                            <div className="planet-shadow"></div>
                         </div>
                     </div>
                     <div className="planet-nav text-center mt-4">
@@ -475,9 +464,7 @@ const PlanetExplorer = ({ onBack }) => {
                         className={`mini-planet-btn ${idx === selectedPlanet ? 'active' : ''}`}
                         onClick={() => setSelectedPlanet(idx)}
                     >
-                        <div className="mini-planet real-texture" style={{ boxShadow: `0 0 5px ${p.glow}` }}>
-                            <img src={p.image} alt={p.name} />
-                        </div>
+                        <div className="mini-planet" style={{ background: p.color }}></div>
                         <span>{p.name}</span>
                     </button>
                 ))}
@@ -493,54 +480,48 @@ const StarExplorer = ({ onBack }) => {
     const stars = [
         {
             name: "The Sun",
-            image: "https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e000790/GSFC_20171208_Archive_e000790~orig.jpg",
-            glow: "rgba(255, 193, 7, 0.7)",
             color: "#ffc107",
+            glow: "rgba(255, 193, 7, 0.6)",
             type: "Yellow Dwarf (G2V)",
             desc: "Our home star. A nearly perfect sphere of hot plasma, it creates the energy that sustains life on Earth.",
             stats: { dist: "0 Light Years", mass: "1 Solar Mass", temp: "5,500°C" }
         },
         {
             name: "Proxima Centauri",
-            image: "https://images-assets.nasa.gov/image/hubble-brightens-the-heart-of-proxima-centauri_15291215161_o/hubble-brightens-the-heart-of-proxima-centauri_15291215161_o~orig.jpg",
-            glow: "rgba(211, 47, 47, 0.6)",
             color: "#d32f2f",
+            glow: "rgba(211, 47, 47, 0.6)",
             type: "Red Dwarf (M5.5Ve)",
             desc: "The closest known star to the Sun. It is a small, low-mass star located 4.24 light-years away.",
             stats: { dist: "4.24 Light Years", mass: "0.12 Solar Mass", temp: "2,769°C" }
         },
         {
             name: "Sirius A",
-            image: "https://images-assets.nasa.gov/image/PIA12111/PIA12111~orig.jpg",
-            glow: "rgba(128, 216, 255, 0.7)",
             color: "#80d8ff",
+            glow: "rgba(128, 216, 255, 0.6)",
             type: "Main Sequence (A1V)",
             desc: "The brightest star in the night sky. It's actually a binary system, but A is the bright white main star.",
             stats: { dist: "8.6 Light Years", mass: "2 Solar Masses", temp: "9,667°C" }
         },
         {
             name: "Betelgeuse",
-            image: "https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e001222/GSFC_20171208_Archive_e001222~orig.jpg",
-            glow: "rgba(255, 61, 0, 0.6)",
             color: "#ff3d00",
+            glow: "rgba(255, 61, 0, 0.5)",
             type: "Red Supergiant (M1-2)",
             desc: "A colossal monster star that would reach Jupiter's orbit if placed in our solar system. Likely to go supernova soon.",
             stats: { dist: "640 Light Years", mass: "16 Solar Masses", temp: "3,200°C" }
         },
         {
             name: "Rigel",
-            image: "https://images-assets.nasa.gov/image/hubble-observes-supergiant-star-rigel_17112015091_o/hubble-observes-supergiant-star-rigel_17112015091_o~orig.jpg",
-            glow: "rgba(64, 196, 255, 0.6)",
             color: "#40c4ff",
+            glow: "rgba(64, 196, 255, 0.6)",
             type: "Blue Supergiant (B8Ia)",
             desc: "A star of immense brightness and power. It puts out about 120,000 times as much energy as our Sun.",
             stats: { dist: "860 Light Years", mass: "21 Solar Masses", temp: "11,827°C" }
         },
         {
             name: "Vega",
-            image: "https://images-assets.nasa.gov/image/PIA14426/PIA14426~orig.jpg",
-            glow: "rgba(225, 245, 254, 0.8)",
             color: "#e1f5fe",
+            glow: "rgba(225, 245, 254, 0.8)",
             type: "Main Sequence (A0V)",
             desc: "A bright blue-tinged star that will become our North Star in about 12,000 years due to precession.",
             stats: { dist: "25 Light Years", mass: "2.1 Solar Masses", temp: "9,327°C" }
@@ -558,12 +539,12 @@ const StarExplorer = ({ onBack }) => {
                 <div className="planet-visual-stage">
                     <div className="planet-3d-container">
                         <div
-                            className="star-sphere pulsating-star real-texture"
+                            className="star-sphere pulsating-star"
                             style={{
-                                boxShadow: `0 0 70px 30px ${current.glow}, inset -10px -10px 50px rgba(0,0,0,0.5)`
+                                background: `radial-gradient(circle at 30% 30%, #fff, ${current.color})`,
+                                boxShadow: `0 0 60px 20px ${current.glow}, inset -10px -10px 40px rgba(0,0,0,0.5)`
                             }}
                         >
-                            <img src={current.image} alt={current.name} className="star-image-texture" />
                             <div className="star-corona" style={{ borderColor: current.color }}></div>
                         </div>
                     </div>
@@ -605,9 +586,7 @@ const StarExplorer = ({ onBack }) => {
                         className={`mini-planet-btn ${idx === selectedStar ? 'active' : ''}`}
                         onClick={() => setSelectedStar(idx)}
                     >
-                        <div className="mini-planet real-texture" style={{ boxShadow: `0 0 10px ${s.glow}` }}>
-                            <img src={s.image} alt={s.name} />
-                        </div>
+                        <div className="mini-planet" style={{ background: s.color, boxShadow: `0 0 10px ${s.glow}` }}></div>
                         <span>{s.name}</span>
                     </button>
                 ))}

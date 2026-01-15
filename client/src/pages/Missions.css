@@ -1,5 +1,5 @@
 .missions-container {
-    padding-top: 60px;
+    padding-top: 100px;
     min-height: 100vh;
 }
 
@@ -43,6 +43,7 @@
     margin-bottom: 0.5rem;
     background: linear-gradient(to right, #fff, #aaa);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     font-family: var(--font-display);
 }
