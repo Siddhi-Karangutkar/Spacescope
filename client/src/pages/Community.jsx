@@ -12,7 +12,26 @@ const Community = () => {
     useEffect(() => {
         const saved = localStorage.getItem('spacescope_reports');
         if (saved) {
-            setReports(JSON.parse(saved));
+            let parsed = JSON.parse(saved);
+            // MIGRATION: Fix the accidental car image in user's cache
+            const oldCarUrl = "https://images.unsplash.com/photo-1573074617613-fc8ef27eaa2f?auto=format&fit=crop&q=80&w=800";
+            const newAuroraUrl = "https://images.unsplash.com/photo-1531366930472-358045768e82?auto=format&fit=crop&q=80&w=800";
+
+            let updated = false;
+            parsed = parsed.map(r => {
+                if (r.images && r.images.includes(oldCarUrl)) {
+                    updated = true;
+                    return { ...r, images: r.images.map(img => img === oldCarUrl ? newAuroraUrl : img) };
+                }
+                return r;
+            });
+
+            if (updated) {
+                setReports(parsed);
+                localStorage.setItem('spacescope_reports', JSON.stringify(parsed));
+            } else {
+                setReports(parsed);
+            }
         } else {
             // Initial Seed Data
             const seed = [
@@ -24,7 +43,7 @@ const Community = () => {
                     status: "APPROVED",
                     category: "Observation",
                     timestamp: new Date(Date.now() - 86400000).toISOString(),
-                    images: ["https://images.unsplash.com/photo-1573074617613-fc8ef27eaa2f?auto=format&fit=crop&q=80&w=800"]
+                    images: ["https://images.unsplash.com/photo-1531366930472-358045768e82?auto=format&fit=crop&q=80&w=800"]
                 },
                 {
                     id: 2,
