@@ -26,6 +26,7 @@ const Navbar = () => {
                     <Link to="/asteroid-radar" className="nav-link">Asteroid Radar</Link>
                     <Link to="/missions" className="nav-link">Missions</Link>
                     <Link to="/learn" className="nav-link">Learn</Link>
+                    <Link to="/community" className="nav-link">Crew Quarters</Link>
                     <Link to="/earth-link" className="nav-link highlight">EarthLink</Link>
 
                     <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle Theme">
