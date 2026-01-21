@@ -179,3 +179,458 @@
 }
 
 /* Animations */
+
+/* ===== 3D EARTH VISUALIZATION ===== */
+.earth-3d-container {
+    max-width: 1200px;
+    margin: 2rem auto 3rem;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.earth-scene {
+    position: relative;
+    height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1000px;
+}
+
+/* Sun Indicator */
+.sun-indicator {
+    position: absolute;
+    left: 50px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 1;
+}
+
+.sun-glow {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #ffeb3b, #ff9800);
+    box-shadow: 0 0 40px #ffeb3b, 0 0 80px #ff9800;
+    animation: pulseSun 3s ease-in-out infinite;
+}
+
+@keyframes pulseSun {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 0.9;
+    }
+}
+
+.sun-label {
+    font-size: 0.8rem;
+    color: #ffeb3b;
+    font-weight: 600;
+    text-shadow: 0 0 10px #ff9800;
+}
+
+/* Solar Wind Particles */
+.solar-wind-particles {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.particle {
+    position: absolute;
+    left: 100px;
+    width: 4px;
+    height: 4px;
+    background: #ffeb3b;
+    border-radius: 50%;
+    box-shadow: 0 0 6px #ffeb3b;
+    animation: flowParticle 4s linear infinite;
+}
+
+@keyframes flowParticle {
+    0% {
+        left: 100px;
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        left: calc(50% - 50px);
+        opacity: 0;
+    }
+}
+
+/* Earth Wrapper */
+.earth-wrapper {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    z-index: 3;
+}
+
+/* Magnetic Shield */
+.magnetic-shield {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 380px;
+    height: 380px;
+    border-radius: 50%;
+    border: 3px solid #00ff88;
+    transition: all 0.5s ease;
+    animation: shieldPulse 3s ease-in-out infinite;
+}
+
+@keyframes shieldPulse {
+
+    0%,
+    100% {
+        opacity: 0.6;
+    }
+
+    50% {
+        opacity: 0.9;
+    }
+}
+
+.magnetic-shield.critical {
+    animation: shieldStress 1s ease-in-out infinite;
+}
+
+@keyframes shieldStress {
+
+    0%,
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    50% {
+        transform: translate(-50%, -50%) scale(0.98);
+    }
+}
+
+.shield-ripple {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    animation: rippleOut 2s ease-out infinite;
+}
+
+@keyframes rippleOut {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(1.3);
+        opacity: 0;
+    }
+}
+
+/* Earth Globe */
+.earth-globe {
+    position: relative;
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    margin: 25px;
+    overflow: hidden;
+    box-shadow: inset -30px -30px 60px rgba(0, 0, 0, 0.8),
+        0 0 50px rgba(100, 200, 255, 0.3);
+    animation: rotateEarth 60s linear infinite;
+}
+
+@keyframes rotateEarth {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.earth-surface {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background:
+        radial-gradient(circle at 30% 30%, #4a90e2, #2c5f8d),
+        linear-gradient(135deg, #1a472a 0%, #2d5a3d 25%, #4a90e2 50%, #2c5f8d 75%, #1a472a 100%);
+    background-size: 200% 200%;
+    animation: earthTexture 120s linear infinite;
+}
+
+@keyframes earthTexture {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    100% {
+        background-position: 200% 50%;
+    }
+}
+
+/* Aurora Effects */
+.aurora {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 25%;
+    background: radial-gradient(ellipse at center,
+            rgba(0, 255, 136, 0.6) 0%,
+            rgba(0, 255, 200, 0.4) 30%,
+            rgba(100, 200, 255, 0.3) 60%,
+            transparent 100%);
+    filter: blur(8px);
+    animation: auroraShimmer 4s ease-in-out infinite;
+    z-index: 2;
+}
+
+.aurora-north {
+    top: 0;
+    border-radius: 50% 50% 0 0;
+}
+
+.aurora-south {
+    bottom: 0;
+    border-radius: 0 0 50% 50%;
+}
+
+@keyframes auroraShimmer {
+
+    0%,
+    100% {
+        opacity: 0.6;
+        filter: blur(8px) hue-rotate(0deg);
+    }
+
+    50% {
+        opacity: 0.9;
+        filter: blur(10px) hue-rotate(20deg);
+    }
+}
+
+/* Atmosphere Glow */
+.atmosphere-glow {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    border-radius: 50%;
+    background: radial-gradient(circle,
+            transparent 60%,
+            rgba(100, 200, 255, 0.2) 75%,
+            rgba(100, 200, 255, 0.4) 85%,
+            transparent 100%);
+    pointer-events: none;
+    z-index: 3;
+}
+
+/* Legend */
+.earth-legend {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 1rem;
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+    z-index: 10;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.aurora-color {
+    background: linear-gradient(135deg, #00ff88, #64c8ff);
+}
+
+.particle-color {
+    background: #ffeb3b;
+    box-shadow: 0 0 6px #ffeb3b;
+}
+
+/* Stats Panel */
+.earth-stats {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 1rem;
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+    min-width: 200px;
+    z-index: 10;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-row:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-value {
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: var(--font-display);
+}
+
+/* Description */
+.earth-description {
+    margin-top: 2rem;
+    text-align: center;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.earth-description h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(90deg, #00ff88, #64c8ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.earth-description p {
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .earth-scene {
+        height: 400px;
+    }
+
+    .earth-wrapper {
+        width: 200px;
+        height: 200px;
+    }
+
+    .earth-globe {
+        width: 180px;
+        height: 180px;
+        margin: 10px;
+    }
+
+    .magnetic-shield {
+        width: 260px;
+        height: 260px;
+    }
+
+    .sun-indicator {
+        left: 20px;
+    }
+
+    .sun-glow {
+        width: 40px;
+        height: 40px;
+    }
+
+    .earth-legend,
+    .earth-stats {
+        position: static;
+        margin-top: 1rem;
+    }
+
+    .earth-stats {
+        margin-bottom: 1rem;
+    }
+
+    .particle {
+        width: 3px;
+        height: 3px;
+    }
+}
+
+@media (max-width: 480px) {
+    .earth-3d-container {
+        padding: 1rem;
+    }
+
+    .earth-scene {
+        height: 350px;
+    }
+
+    .earth-wrapper {
+        width: 160px;
+        height: 160px;
+    }
+
+    .earth-globe {
+        width: 140px;
+        height: 140px;
+    }
+
+    .magnetic-shield {
+        width: 200px;
+        height: 200px;
+    }
+}
