@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Upload, CheckCircle, XCircle, MessageSquare, Image as ImageIcon, Send, ShieldCheck, Clock, Eye } from 'lucide-react';
+import { Users, Upload, CheckCircle, XCircle, MessageSquare, Image as ImageIcon, Send, ShieldCheck, Clock, Eye, HelpCircle } from 'lucide-react';
 import './Community.css';
 
 const Community = () => {
-    const [view, setView] = useState('FEED'); // FEED, SUBMIT, ADMIN
+    const [view, setView] = useState('FEED'); // FEED, DOUBTS, SUBMIT, ADMIN
     const [reports, setReports] = useState([]);
+    const [doubts, setDoubts] = useState([]);
     const [form, setForm] = useState({ title: '', content: '', category: 'Observation', images: [] });
+    const [doubtForm, setDoubtForm] = useState({ question: '' });
+    const [replyForm, setReplyForm] = useState({ doubtId: null, text: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Initial Load
@@ -34,7 +37,7 @@ const Community = () => {
                 setReports(parsed);
             }
         } else {
-            // Initial Seed Data
+            // Initial Seed Data for Reports
             const seed = [
                 {
                     id: 1,
@@ -70,11 +73,43 @@ const Community = () => {
             setReports(seed);
             localStorage.setItem('spacescope_reports', JSON.stringify(seed));
         }
+
+        // Load Doubts
+        const savedDoubts = localStorage.getItem('spacescope_doubts');
+        if (savedDoubts) {
+            setDoubts(JSON.parse(savedDoubts));
+        } else {
+            const seedDoubts = [
+                {
+                    id: 1,
+                    user: "AstroNewbie",
+                    question: "How do I calculate the orbital velocity of a satellite around Earth?",
+                    timestamp: new Date(Date.now() - 3600000).toISOString(),
+                    replies: [
+                        { user: "CosmicGuru", text: "You can use the formula v = sqrt(GM/r), where G is the gravitational constant, M is Earth's mass, and r is the distance from the center of Earth.", timestamp: new Date(Date.now() - 1800000).toISOString() }
+                    ]
+                },
+                {
+                    id: 2,
+                    user: "SpaceFan_01",
+                    question: "What's the best time to see the ISS passing over New York this week?",
+                    timestamp: new Date(Date.now() - 7200000).toISOString(),
+                    replies: []
+                }
+            ];
+            setDoubts(seedDoubts);
+            localStorage.setItem('spacescope_doubts', JSON.stringify(seedDoubts));
+        }
     }, []);
 
     const saveReports = (newReports) => {
         setReports(newReports);
         localStorage.setItem('spacescope_reports', JSON.stringify(newReports));
+    };
+
+    const saveDoubts = (newDoubts) => {
+        setDoubts(newDoubts);
+        localStorage.setItem('spacescope_doubts', JSON.stringify(newDoubts));
     };
 
     // Form Handlers
@@ -119,6 +154,40 @@ const Community = () => {
         saveReports(updated);
     };
 
+    // Doubt Handlers
+    const handleDoubtSubmit = (e) => {
+        e.preventDefault();
+        const newDoubt = {
+            id: Date.now(),
+            user: "Student_X",
+            question: doubtForm.question,
+            timestamp: new Date().toISOString(),
+            replies: []
+        };
+        const updated = [newDoubt, ...doubts];
+        saveDoubts(updated);
+        setDoubtForm({ question: '' });
+    };
+
+    const handleReplySubmit = (e, doubtId) => {
+        e.preventDefault();
+        const updated = doubts.map(d => {
+            if (d.id === doubtId) {
+                return {
+                    ...d,
+                    replies: [...d.replies, {
+                        user: "Space_Explorer",
+                        text: replyForm.text,
+                        timestamp: new Date().toISOString()
+                    }]
+                };
+            }
+            return d;
+        });
+        saveDoubts(updated);
+        setReplyForm({ doubtId: null, text: '' });
+    };
+
     const approvedReports = reports.filter(r => r.status === 'APPROVED');
     const pendingReports = reports.filter(r => r.status === 'PENDING');
 
@@ -127,13 +196,16 @@ const Community = () => {
             {/* TAB NAVIGATION */}
             <div className="community-nav glass-panel">
                 <button className={`nav-tab ${view === 'FEED' ? 'active' : ''}`} onClick={() => setView('FEED')}>
-                    <Users size={20} /> Community Feed
+                    <Users size={20} /> Space Intel
+                </button>
+                <button className={`nav-tab ${view === 'DOUBTS' ? 'active' : ''}`} onClick={() => setView('DOUBTS')}>
+                    <MessageSquare size={20} /> Crew Quarters
                 </button>
                 <button className={`nav-tab ${view === 'SUBMIT' ? 'active' : ''}`} onClick={() => setView('SUBMIT')}>
-                    <Upload size={20} /> Share Report
+                    <Upload size={20} /> Contribute
                 </button>
                 <button className={`nav-tab ${view === 'ADMIN' ? 'active' : ''}`} onClick={() => setView('ADMIN')}>
-                    <ShieldCheck size={20} /> Admin Review {pendingReports.length > 0 && <span className="notif-dot">{pendingReports.length}</span>}
+                    <ShieldCheck size={20} /> Commander Review {pendingReports.length > 0 && <span className="notif-dot">{pendingReports.length}</span>}
                 </button>
             </div>
 
@@ -165,6 +237,65 @@ const Community = () => {
                             {approvedReports.length > 0 ? approvedReports.map(report => (
                                 <ReportCard key={report.id} report={report} />
                             )) : <div className="empty-msg">No reports found. Be the first to share!</div>}
+                        </div>
+                    </div>
+                )}
+
+                {view === 'DOUBTS' && (
+                    <div className="doubts-view">
+                        <div className="doubts-header">
+                            <h2>Crew Quarters: Study Deck</h2>
+                            <p>Discuss doubts, solve cosmic mysteries, and help fellow students.</p>
+                        </div>
+
+                        <div className="doubt-input-section glass-panel">
+                            <form onSubmit={handleDoubtSubmit} className="doubt-form">
+                                <HelpCircle size={24} className="text-orange-400" />
+                                <input
+                                    required
+                                    placeholder="Got a space question? Ask the crew..."
+                                    value={doubtForm.question}
+                                    onChange={e => setDoubtForm({ question: e.target.value })}
+                                />
+                                <button type="submit" className="ask-btn">Ask Question</button>
+                            </form>
+                        </div>
+
+                        <div className="doubts-list">
+                            {doubts.length > 0 ? doubts.map(doubt => (
+                                <div key={doubt.id} className="doubt-card glass-panel fade-in">
+                                    <div className="doubt-header">
+                                        <span className="doubt-user">@{doubt.user} asked:</span>
+                                        <span className="doubt-time">{new Date(doubt.timestamp).toLocaleString()}</span>
+                                    </div>
+                                    <div className="doubt-question">
+                                        <h3>{doubt.question}</h3>
+                                    </div>
+
+                                    <div className="replies-section">
+                                        {doubt.replies.map((reply, i) => (
+                                            <div key={i} className="reply-item">
+                                                <div className="reply-meta">
+                                                    <span className="reply-user">@{reply.user}</span>
+                                                    <span className="reply-time">{new Date(reply.timestamp).toLocaleTimeString()}</span>
+                                                </div>
+                                                <p className="reply-text">{reply.text}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <form onSubmit={(e) => handleReplySubmit(e, doubt.id)} className="reply-form">
+                                        <input
+                                            required
+                                            placeholder="Add a reply..."
+                                            value={replyForm.doubtId === doubt.id ? replyForm.text : ''}
+                                            onFocus={() => setReplyForm({ ...replyForm, doubtId: doubt.id })}
+                                            onChange={e => setReplyForm({ ...replyForm, text: e.target.value })}
+                                        />
+                                        <button type="submit" className="reply-btn"><Send size={16} /></button>
+                                    </form>
+                                </div>
+                            )) : <div className="empty-msg">Total silence in the comms. Start a discussion!</div>}
                         </div>
                     </div>
                 )}

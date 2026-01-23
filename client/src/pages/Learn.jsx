@@ -106,81 +106,138 @@ const QuizModule = ({ onBack }) => {
         ]
     };
 
-    const [level, setLevel] = useState(null); // null, 'EASY', 'MEDIUM', 'HARD'
-    const [current, setCurrent] = useState(0);
+    const [difficulty, setDifficulty] = useState(0); // 0-10 scale
+    const [currentQuestion, setCurrentQuestion] = useState(null);
+    const [history, setHistory] = useState([]); // Track used questions
     const [score, setScore] = useState(0);
+    const [totalAnswered, setTotalAnswered] = useState(0);
     const [showScore, setShowScore] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [aiFeedback, setAiFeedback] = useState("");
 
-    const activeQuestions = level ? LEVELS[level] : [];
+    const getDifficultyTier = (d) => {
+        if (d <= 3) return 'EASY';
+        if (d <= 7) return 'MEDIUM';
+        return 'HARD';
+    };
+
+    const pickQuestion = (currentDifficulty) => {
+        const tier = getDifficultyTier(currentDifficulty);
+        const pool = LEVELS[tier];
+        // Filter out recently used questions if possible, or just pick random
+        const unused = pool.filter(q => !history.includes(q.q));
+        const finalPool = unused.length > 0 ? unused : pool;
+        const randomQ = finalPool[Math.floor(Math.random() * finalPool.length)];
+        return { ...randomQ, tier };
+    };
+
+    useEffect(() => {
+        if (!currentQuestion && !showScore) {
+            setCurrentQuestion(pickQuestion(difficulty));
+        }
+    }, [difficulty, showScore]);
 
     const handleAnswer = (idx) => {
-        if (idx === activeQuestions[current].ans) setScore(score + 1);
-        const next = current + 1;
-        if (next < activeQuestions.length) setCurrent(next);
-        else setShowScore(true);
+        const isCorrect = idx === currentQuestion.ans;
+        const oldDiff = difficulty;
+        let newDiff = difficulty;
+
+        if (isCorrect) {
+            setScore(score + 1);
+            newDiff = Math.min(10, difficulty + 2);
+            setAiFeedback("Correct! Increasing challenge protocol...");
+        } else {
+            newDiff = Math.max(0, difficulty - 1);
+            setAiFeedback("Analyzing error... Frequency adjusted.");
+        }
+
+        setHistory([...history, currentQuestion.q]);
+        setTotalAnswered(totalAnswered + 1);
+        setIsAnalyzing(true);
+
+        setTimeout(() => {
+            if (totalAnswered + 1 >= 10) {
+                setShowScore(true);
+            } else {
+                setDifficulty(newDiff);
+                setCurrentQuestion(pickQuestion(newDiff));
+            }
+            setIsAnalyzing(false);
+        }, 1200);
     };
 
     const resetQuiz = () => {
         setScore(0);
-        setCurrent(0);
+        setTotalAnswered(0);
+        setDifficulty(0);
+        setHistory([]);
+        setCurrentQuestion(null);
         setShowScore(false);
-        setLevel(null);
     };
 
-    if (!level) {
-        return (
-            <div className="module-container fade-in">
-                <button className="back-btn" onClick={onBack}>← Back to Hub</button>
-                <div className="level-select text-center">
-                    <h2 className="mb-4">Choose Your Difficulty</h2>
-                    <div className="levels-grid">
-                        <button className="level-btn easy" onClick={() => setLevel('EASY')}>
-                            <h3>Cadet (Easy)</h3>
-                            <p>Basic space facts for beginners.</p>
-                        </button>
-                        <button className="level-btn medium" onClick={() => setLevel('MEDIUM')}>
-                            <h3>Pilot (Medium)</h3>
-                            <p>Challenge your general knowledge.</p>
-                        </button>
-                        <button className="level-btn hard" onClick={() => setLevel('HARD')}>
-                            <h3>Commander (Hard)</h3>
-                            <p>Deep space trivia for experts.</p>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    if (!currentQuestion && !showScore) return <div className="loading">Initializing AI Neural Net...</div>;
 
     return (
-        <div className="module-container fade-in">
-            <button className="back-btn" onClick={() => setLevel(null)}>← Change Level</button>
+        <div className="module-container adaptive-quiz fade-in">
+            <button className="back-btn" onClick={onBack}>← Back to Hub</button>
+
+            <div className="ai-status-bar glass-panel">
+                <div className="status-item">
+                    <Brain size={16} className="text-cyan-400" />
+                    <span>AI Engine Active</span>
+                </div>
+                <div className="status-item">
+                    <Zap size={16} className="text-yellow-400" />
+                    <span>Difficulty: {difficulty}/10 ({getDifficultyTier(difficulty)})</span>
+                </div>
+                <div className="difficulty-meter">
+                    <div className="diff-progress" style={{ width: `${(difficulty / 10) * 100}%` }}></div>
+                </div>
+            </div>
+
             <div className="quiz-box glass-panel">
                 {showScore ? (
                     <div className="score-section text-center">
-                        <h2>Mission Debrief ({level})</h2>
-                        <div className="final-score">{score} / {activeQuestions.length}</div>
-                        <p>
-                            {score === activeQuestions.length ? "Perfect Score! You're ready for ignition." :
-                                score > 7 ? "Excellent work, Officer." :
-                                    score > 4 ? "Good effort, keep training." : "Back to the flight simulator."}
+                        <Cpu size={64} className="mb-4 text-cyan-400" />
+                        <h2>Neural Analysis Complete</h2>
+                        <div className="final-score">{score} / {totalAnswered}</div>
+                        <p className="peak-difficulty">Peak Difficulty Reached: {Math.max(...history.map(q => {
+                            // Find tier of this question in LEVELS
+                            if (LEVELS.HARD.some(hq => hq.q === q)) return 10;
+                            if (LEVELS.MEDIUM.some(mq => mq.q === q)) return 6;
+                            return 2;
+                        }))}/10</p>
+                        <p className="analysis-text">
+                            {score === totalAnswered ? "Exceptional synchronization. Your cognitive patterns match senior astro-scientists." :
+                                score > 7 ? "High-level aptitude detected. Minimal recalibration required." :
+                                    score > 4 ? "Standard performance. Neural paths require further star-data absorption." : "Critical system failure. Returning to basic education protocols."}
                         </p>
-                        <button className="action-btn" onClick={resetQuiz}>New Mission</button>
+                        <button className="action-btn" onClick={resetQuiz}>Re-Run Simulation</button>
                     </div>
                 ) : (
-                    <div className="question-section">
-                        <div className="q-head">
-                            <span className="q-level-badge">{level}</span>
-                            <span className="q-count">Question {current + 1}/{activeQuestions.length}</span>
-                        </div>
-                        <h2 className="question-text">{activeQuestions[current].q}</h2>
-                        <div className="options-grid">
-                            {activeQuestions[current].options.map((opt, idx) => (
-                                <button key={idx} className="option-btn" onClick={() => handleAnswer(idx)}>
-                                    {opt}
-                                </button>
-                            ))}
-                        </div>
+                    <div className={`question-section ${isAnalyzing ? 'analyzing' : ''}`}>
+                        {isAnalyzing ? (
+                            <div className="ai-analysis-overlay">
+                                <div className="scanner-line"></div>
+                                <Brain size={48} className="pulse" />
+                                <p>{aiFeedback}</p>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="q-head">
+                                    <span className={`q-level-badge ${currentQuestion.tier.toLowerCase()}`}>{currentQuestion.tier}</span>
+                                    <span className="q-count">Protocol {totalAnswered + 1}/10</span>
+                                </div>
+                                <h2 className="question-text">{currentQuestion.q}</h2>
+                                <div className="options-grid">
+                                    {currentQuestion.options.map((opt, idx) => (
+                                        <button key={idx} className="option-btn" onClick={() => handleAnswer(idx)}>
+                                            {opt}
+                                        </button>
+                                    ))}
+                                </div>
+                            </>
+                        )}
                     </div>
                 )}
             </div>

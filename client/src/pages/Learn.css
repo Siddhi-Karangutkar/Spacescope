@@ -431,9 +431,7 @@
     z-index: 1;
 }
 
-.with-rings {
-    /* Adjust z-index or scale for ringed planets */
-}
+
 
 @keyframes floatPlanet {
 
@@ -959,4 +957,117 @@
         flex-direction: column;
         gap: 1rem;
     }
+}
+
+/* ADAPTIVE QUIZ STYLES */
+.ai-status-bar {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 1rem 1.5rem;
+    margin-bottom: 2rem;
+    border-radius: 99px;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.difficulty-meter {
+    flex-grow: 1;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.diff-progress {
+    height: 100%;
+    background: linear-gradient(90deg, #4caf50, #ffeb3b, #f44336);
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.question-section.analyzing {
+    position: relative;
+    min-height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ai-analysis-overlay {
+    text-align: center;
+    color: var(--accent-primary);
+}
+
+.scanner-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--accent-primary);
+    box-shadow: 0 0 15px var(--accent-primary);
+    animation: scan 1.2s linear infinite;
+}
+
+@keyframes scan {
+    0% {
+        top: 0;
+    }
+
+    100% {
+        top: 100%;
+    }
+}
+
+.pulse {
+    animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+    from {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+
+    to {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+}
+
+.q-level-badge.easy {
+    border-color: #4caf50;
+    color: #4caf50;
+}
+
+.q-level-badge.medium {
+    border-color: #ffeb3b;
+    color: #ffeb3b;
+}
+
+.q-level-badge.hard {
+    border-color: #f44336;
+    color: #f44336;
+}
+
+.peak-difficulty {
+    font-size: 0.9rem;
+    color: #ff4081;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-top: 1rem;
+}
+
+.analysis-text {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-top: 1rem;
 }
