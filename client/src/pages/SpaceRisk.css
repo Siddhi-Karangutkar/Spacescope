@@ -1,0 +1,489 @@
+/* SpaceRisk.css */
+
+.space-risk-page {
+    min-height: 100vh;
+    padding-top: 100px;
+    padding-bottom: 3rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    background-color: #050505;
+    /* Fallback/Base color matching dashboard */
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+}
+
+/* --- Header --- */
+.space-risk-header {
+    max-width: 80rem;
+    /* 7xl */
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 4rem;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.back-link {
+    position: absolute;
+    left: 0;
+    top: 4px;
+    /* Align visually */
+    color: #22d3ee;
+    /* cyan-400 */
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    letter-spacing: 0.025em;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: #fff;
+}
+
+.header-content {
+    text-align: center;
+}
+
+.risk-title {
+    font-size: 2.25rem;
+    /* 36px */
+    line-height: 1.1;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: #fff;
+    margin: 0;
+}
+
+@media (min-width: 768px) {
+    .risk-title {
+        font-size: 3rem;
+        /* 48px */
+    }
+}
+
+.text-cyan {
+    color: #22d3ee;
+}
+
+.risk-subtitle {
+    color: #9ca3af;
+    /* gray-400 */
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+}
+
+/* --- Search Section --- */
+.risk-search-container {
+    max-width: 42rem;
+    /* 2xl */
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 5rem;
+    position: relative;
+    z-index: 10;
+    text-align: center;
+}
+
+.risk-search-form {
+    display: flex;
+    gap: 0;
+    box-shadow: 0 25px 50px -12px rgba(22, 78, 99, 0.3);
+    /* shadow-2xl cyan-900/30 */
+    transition: transform 0.3s ease;
+}
+
+.risk-search-form:hover {
+    transform: scale(1.02);
+}
+
+.risk-input {
+    width: 100%;
+    height: 70px;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    /* cyan-500/30 */
+    border-right: none;
+    border-radius: 8px 0 0 8px;
+    color: #fff;
+    font-size: 1.125rem;
+    /* lg */
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.risk-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.risk-input:focus {
+    border-color: #22d3ee;
+}
+
+.risk-submit-btn {
+    height: 70px;
+    padding: 0 2.5rem;
+    background-color: #0891b2;
+    /* cyan-600 */
+    color: #000;
+    border: none;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0 8px 8px 0;
+    font-size: 1.25rem;
+    /* xl */
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.risk-submit-btn:hover {
+    background-color: #06b6d4;
+    /* cyan-500 */
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
+}
+
+.risk-submit-btn:disabled {
+    background-color: #374151;
+    cursor: not-allowed;
+    color: #9ca3af;
+}
+
+.error-message {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border: 1px solid #ef4444;
+    background-color: rgba(69, 10, 10, 0.5);
+    /* red-950/50 */
+    color: #fecaca;
+    /* red-200 */
+    border-radius: 0.25rem;
+    text-align: center;
+    font-weight: 500;
+    letter-spacing: 0.025em;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* --- Results Section --- */
+.risk-results-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 3rem;
+    animation: fadeInSlideUp 0.7s ease-out forwards;
+}
+
+/* Main Card */
+.risk-main-card {
+    width: 90%;
+    max-width: 900px;
+    /* limit max width for very large screens */
+    background: rgba(255, 255, 255, 0.03);
+    border: 2px solid rgba(6, 182, 212, 0.3);
+    border-radius: 1rem;
+    padding: 2.5rem;
+    margin-bottom: 4rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 50px rgba(34, 211, 238, 0.1);
+}
+
+@media (min-width: 1024px) {
+    .risk-main-card {
+        width: 75%;
+    }
+}
+
+.card-top-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, #22d3ee, transparent);
+    opacity: 0.7;
+}
+
+.main-card-title {
+    color: #9ca3af;
+    font-size: 0.75rem;
+    /* xs */
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5em;
+    /* 8px ish */
+    margin-bottom: 2rem;
+    opacity: 0.7;
+}
+
+.location-name {
+    font-size: 3rem;
+    font-weight: 300;
+    color: #fff;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1;
+}
+
+@media (min-width: 768px) {
+    .location-name {
+        font-size: 3.75rem;
+        /* 6xl */
+    }
+}
+
+.score-display {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 1rem;
+    margin-top: 2.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.total-score {
+    font-size: 6rem;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+    text-shadow: 0 0 25px rgba(255, 255, 255, 0.3);
+}
+
+@media (min-width: 768px) {
+    .total-score {
+        font-size: 8rem;
+        /* 9xl equiv approx */
+    }
+}
+
+.score-max {
+    font-size: 2.25rem;
+    color: #6b7280;
+    margin-bottom: 1rem;
+    font-weight: 300;
+}
+
+.risk-status-badge {
+    display: inline-block;
+    padding: 0.75rem 2rem;
+    border-radius: 9999px;
+    border: 1px solid;
+    font-size: 0.875rem;
+    /* base/sm */
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.status-critical {
+    border-color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+}
+
+.status-safe {
+    border-color: #22c55e;
+    background-color: rgba(34, 197, 94, 0.1);
+    color: #4ade80;
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+}
+
+/* Grid Layout */
+.risk-grid {
+    width: 90%;
+    max-width: 900px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+
+@media (min-width: 768px) {
+    .risk-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (min-width: 1024px) {
+    .risk-grid {
+        width: 75%;
+    }
+}
+
+/* Factor Cards */
+.factor-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 0.75rem;
+    padding: 2rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    transition: all 0.3s ease;
+    cursor: default;
+}
+
+.factor-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-2px);
+}
+
+/* Color Themes for Cards */
+.theme-yellow:hover {
+    border-color: rgba(234, 179, 8, 0.3);
+}
+
+.theme-blue:hover {
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.theme-cyan:hover {
+    border-color: rgba(6, 182, 212, 0.3);
+}
+
+.theme-purple:hover {
+    border-color: rgba(168, 85, 247, 0.3);
+}
+
+.icon-wrapper {
+    padding: 1rem;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s ease;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+}
+
+.factor-card:hover .icon-wrapper {
+    transform: scale(1.1);
+}
+
+.card-content-wrapper {
+    flex: 1;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.factor-title {
+    font-size: 1.125rem;
+    /* lg */
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.025em;
+    text-transform: uppercase;
+}
+
+.factor-score {
+    font-size: 1.5rem;
+    /* 2xl */
+    font-weight: 700;
+}
+
+/* Progress Bar */
+.progress-track {
+    width: 100%;
+    height: 0.75rem;
+    /* 3 */
+    background: rgba(31, 41, 55, 0.5);
+    /* gray-800/50 */
+    border-radius: 9999px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.progress-fill {
+    height: 100%;
+    transition: width 1s ease-out;
+    box-shadow: 0 0 10px currentColor;
+}
+
+.text-yellow {
+    color: #facc15;
+}
+
+.bg-yellow {
+    background-color: #facc15;
+}
+
+.text-blue {
+    color: #60a5fa;
+}
+
+.bg-blue {
+    background-color: #60a5fa;
+}
+
+.text-purple {
+    color: #c084fc;
+}
+
+.bg-purple {
+    background-color: #c084fc;
+}
+
+.factor-label {
+    color: #fff;
+    font-weight: 500;
+    letter-spacing: 0.025em;
+    margin: 0;
+    font-size: 1rem;
+}
+
+.factor-detail {
+    color: #6b7280;
+    /* gray-500 */
+    font-size: 0.75rem;
+    /* xs */
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.25rem;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: .5;
+    }
+}
+
+@keyframes fadeInSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

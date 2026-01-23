@@ -9,6 +9,18 @@ const Dashboard = () => {
             <p>Welcome to your cosmic control center. Modules loading...</p>
             {/* Placeholder for future widgets */}
             <div className="dashboard-grid">
+                {/* NEW FEATURE: Space Risk */}
+                <div className="glass-panel widget weather-summary-widget" style={{ borderColor: '#22A6B3', boxShadow: '0 0 10px rgba(34, 166, 179, 0.1)' }}>
+                    <h3>Space Risk Scanner</h3>
+                    <div className="summary-status text-cyan-400">Analysis Ready</div>
+                    <a href="/space-risk" className="view-details-link">Analyze City →</a>
+                </div>
+                {/* NEW FEATURE: Satellite Vision */}
+                <div className="glass-panel widget weather-summary-widget" style={{ borderColor: '#2ecc71', boxShadow: '0 0 10px rgba(46, 204, 113, 0.1)' }}>
+                    <h3>Satellite Vision</h3>
+                    <div className="summary-status text-green-400">Live NASA Feed</div>
+                    <a href="/satellite-view" className="view-details-link">Monitor Orbit →</a>
+                </div>
                 <div className="glass-panel widget weather-summary-widget">
                     <h3><SmartTerm term="Space Weather" /></h3>
                     <div className="summary-status text-green-400">Loading...</div>
@@ -38,6 +50,11 @@ const Dashboard = () => {
                     <h3>EarthLink</h3>
                     <div className="summary-status text-blue-400">Monitoring Planet</div>
                     <a href="/earth-link" className="view-details-link">View Impact →</a>
+                </div>
+                <div className="glass-panel widget weather-summary-widget">
+                    <h3>Crew Quarters</h3>
+                    <div className="summary-status text-orange-400">Join the Mission</div>
+                    <a href="/community" className="view-details-link">Community Hub →</a>
                 </div>
             </div>
         </div>
