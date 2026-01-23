@@ -136,10 +136,10 @@ const Missions = () => {
                 </div>
             )}
 
-            {/* Timeline Section */}
-            <div className="timeline-section">
-                <div className="timeline-header">
-                    <h2>Mission Timeline</h2>
+            {/* Mission Section Header - Positioned Above the Timeline */}
+            <div className="timeline-header-block">
+                <h2 className="section-title">Mission Timeline</h2>
+                <div className="filters-container">
                     <div className="filters">
                         {['ALL', 'SPACEX', 'ISRO', 'MOON', 'MARS'].map(f => (
                             <button
@@ -152,7 +152,10 @@ const Missions = () => {
                         ))}
                     </div>
                 </div>
+            </div>
 
+            {/* Timeline Section Track */}
+            <div className="timeline-section">
                 <div className="timeline-track">
                     {filtered.map((mission, idx) => {
                         const isPast = new Date(mission.net) < new Date();
