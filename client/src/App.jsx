@@ -13,6 +13,8 @@ import EarthLink from './pages/EarthLink';
 import Community from './pages/Community';
 import CosmicTimeline from './pages/CosmicTimeline';
 import Chatbot from './components/Chatbot';
+import SpaceRisk from './pages/SpaceRisk';
+import SatelliteView from './pages/SatelliteView';
 
 function App() {
   return (
@@ -24,6 +26,8 @@ function App() {
             <Routes>
               <Route path="/" element={<LandingPage />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/space-risk" element={<SpaceRisk />} /> {/* Phase 6 */}
+              <Route path="/satellite-view" element={<SatelliteView />} /> {/* Phase 9 */}
               <Route path="/cosmic-weather" element={<CosmicWeather />} />
               <Route path="/space-events" element={<SpaceEvents />} />
               <Route path="/asteroid-radar" element={<AsteroidRadar />} />

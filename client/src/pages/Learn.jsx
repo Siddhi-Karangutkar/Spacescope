@@ -355,6 +355,11 @@ const TechStories = ({ onBack }) => {
     );
 };
 
+// ... imports
+import InteractiveModel from '../components/InteractiveModel';
+
+// ... (previous code)
+
 // 6. PLANET EXPLORER (3D CSS)
 const PlanetExplorer = ({ onBack }) => {
     const [selectedPlanet, setSelectedPlanet] = useState(0);
@@ -363,36 +368,48 @@ const PlanetExplorer = ({ onBack }) => {
         {
             name: "Mercury",
             color: "linear-gradient(135deg, #a5a5a5, #5f5f5f)",
+            modelColor: "#a5a5a5",
+            textureUrl: "/textures/mercury.jpg",
             desc: "The smallest planet in our solar system and closest to the Sun. It is only slightly larger than Earth's Moon.",
             stats: { type: "Terrestrial", moons: 0, day: "59 Earth days", year: "88 Earth days" }
         },
         {
             name: "Venus",
             color: "linear-gradient(135deg, #e6c229, #d1a000)",
+            modelColor: "#e6c229",
+            textureUrl: "/textures/venus.jpg",
             desc: "Spinning in the opposite direction to most planets, Venus is the hottest planet in our solar system.",
             stats: { type: "Terrestrial", moons: 0, day: "243 Earth days", year: "225 Earth days" }
         },
         {
             name: "Earth",
             color: "linear-gradient(135deg, #2196f3, #4caf50)",
+            modelColor: "#2196f3",
+            textureUrl: "/textures/earth.jpg",
             desc: "Our home planet is the only place we know of so far that's inhabited by living things.",
             stats: { type: "Terrestrial", moons: 1, day: "24 hours", year: "365.25 days" }
         },
         {
             name: "Mars",
             color: "linear-gradient(135deg, #ff5722, #c62828)",
+            modelColor: "#ff5722",
+            textureUrl: "/textures/mars.jpg",
             desc: "Mars is a dusty, cold, desert world with a very thin atmosphere. It is also a dynamic planet with seasons.",
             stats: { type: "Terrestrial", moons: 2, day: "24.6 hours", year: "687 Earth days" }
         },
         {
             name: "Jupiter",
             color: "linear-gradient(135deg, #d4a373, #a2724e)",
+            modelColor: "#d4a373",
+            textureUrl: "/textures/jupiter.jpg",
             desc: "Jupiter has more than double the mass of all the other planets combined. The Great Red Spot is a centuries-old storm.",
             stats: { type: "Gas Giant", moons: 95, day: "10 hours", year: "12 Earth years" }
         },
         {
             name: "Saturn",
             color: "linear-gradient(135deg, #ead18d, #cfa855)",
+            modelColor: "#ead18d",
+            textureUrl: "/textures/saturn.jpg",
             hasRings: true,
             desc: "Adorned with a dazzling, complex system of icy rings, Saturn is unique in our solar system.",
             stats: { type: "Gas Giant", moons: 146, day: "10.7 hours", year: "29 Earth years" }
@@ -400,12 +417,16 @@ const PlanetExplorer = ({ onBack }) => {
         {
             name: "Uranus",
             color: "linear-gradient(135deg, #00bcd4, #0097a7)",
+            modelColor: "#00bcd4",
+            textureUrl: "/textures/uranus.jpg",
             desc: "Uranus rotates at a nearly 90-degree angle from the plane of its orbit. This unique tilt makes it spin on its side.",
             stats: { type: "Ice Giant", moons: 28, day: "17 hours", year: "84 Earth years" }
         },
         {
             name: "Neptune",
             color: "linear-gradient(135deg, #3f51b5, #1a237e)",
+            modelColor: "#3f51b5",
+            textureUrl: "/textures/neptune.jpg",
             desc: "Neptune is dark, cold and whipped by supersonic winds. It was the first planet located through mathematical calculations.",
             stats: { type: "Ice Giant", moons: 16, day: "16 hours", year: "165 Earth years" }
         }
@@ -420,15 +441,14 @@ const PlanetExplorer = ({ onBack }) => {
             <div className="planet-explorer-layout">
                 {/* Visualizer Side */}
                 <div className="planet-visual-stage">
-                    <div className="planet-3d-container">
-                        <div
-                            className={`planet-sphere ${current.hasRings ? 'with-rings' : ''}`}
-                            style={{ background: current.color }}
-                        >
-                            {/* CSS Rings based on boolean */}
-                            {current.hasRings && <div className="planet-rings"></div>}
-                            <div className="planet-shadow"></div>
-                        </div>
+                    <div className="planet-3d-container" style={{ overflow: 'hidden', borderRadius: '1rem', background: 'rgba(0,0,0,0.3)' }}>
+                        <InteractiveModel
+                            key={current.name} // Force re-render on change
+                            type="planet"
+                            color={current.modelColor}
+                            size={2.2}
+                            textureUrl={current.textureUrl}
+                        />
                     </div>
                     <div className="planet-nav text-center mt-4">
                         <button className="nav-arrow" onClick={() => setSelectedPlanet(p => p > 0 ? p - 1 : planets.length - 1)}>&lt;</button>
@@ -486,10 +506,12 @@ const StarExplorer = ({ onBack }) => {
             name: "The Sun",
             color: "#ffc107",
             glow: "rgba(255, 193, 7, 0.6)",
+            textureUrl: "/textures/sun.jpg",
             type: "Yellow Dwarf (G2V)",
             desc: "Our home star. A nearly perfect sphere of hot plasma, it creates the energy that sustains life on Earth.",
             stats: { dist: "0 Light Years", mass: "1 Solar Mass", temp: "5,500°C" }
         },
+        // ... (other stars remain same)
         {
             name: "Proxima Centauri",
             color: "#d32f2f",
@@ -541,16 +563,14 @@ const StarExplorer = ({ onBack }) => {
             <div className="planet-explorer-layout">
                 {/* Visualizer Side */}
                 <div className="planet-visual-stage">
-                    <div className="planet-3d-container">
-                        <div
-                            className="star-sphere pulsating-star"
-                            style={{
-                                background: `radial-gradient(circle at 30% 30%, #fff, ${current.color})`,
-                                boxShadow: `0 0 60px 20px ${current.glow}, inset -10px -10px 40px rgba(0,0,0,0.5)`
-                            }}
-                        >
-                            <div className="star-corona" style={{ borderColor: current.color }}></div>
-                        </div>
+                    <div className="planet-3d-container" style={{ overflow: 'hidden', borderRadius: '1rem', background: 'rgba(0,0,0,0.5)' }}>
+                        <InteractiveModel
+                            key={current.name}
+                            type="star"
+                            color={current.color}
+                            size={2.5}
+                            textureUrl={current.textureUrl}
+                        />
                     </div>
                     <div className="planet-nav text-center mt-4">
                         <button className="nav-arrow" onClick={() => setSelectedStar(p => p > 0 ? p - 1 : stars.length - 1)}>&lt;</button>
