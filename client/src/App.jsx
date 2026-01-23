@@ -11,6 +11,7 @@ import Missions from './pages/Missions';
 import Learn from './pages/Learn';
 import EarthLink from './pages/EarthLink';
 import Community from './pages/Community';
+import CosmicTimeline from './pages/CosmicTimeline';
 import Chatbot from './components/Chatbot';
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
               <Route path="/learn" element={<Learn />} />
               <Route path="/earth-link" element={<EarthLink />} />
               <Route path="/community" element={<Community />} />
+              <Route path="/cosmic-timeline" element={<CosmicTimeline />} />
             </Routes>
           </div>
           <Chatbot />

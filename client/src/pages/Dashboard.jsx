@@ -39,6 +39,11 @@ const Dashboard = () => {
                     <div className="summary-status text-blue-400">Monitoring Planet</div>
                     <a href="/earth-link" className="view-details-link">View Impact →</a>
                 </div>
+                <div className="glass-panel widget weather-summary-widget">
+                    <h3>Cosmic Timeline</h3>
+                    <div className="summary-status text-cyan-400">Orbital Telemetry</div>
+                    <a href="/cosmic-timeline" className="view-details-link">Travel in Time →</a>
+                </div>
             </div>
         </div>
     );
