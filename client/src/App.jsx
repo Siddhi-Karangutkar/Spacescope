@@ -17,6 +17,9 @@ import Chatbot from './components/Chatbot';
 import InstructorVerification from './pages/InstructorVerification';
 import SpaceRisk from './pages/SpaceRisk';
 import SatelliteView from './pages/SatelliteView';
+import AdminPortal from './pages/AdminPortal';
+import InstructorConnect from './pages/InstructorConnect';
+import InstructorPortal from './pages/InstructorPortal';
 
 // Simple Error Boundary
 class ErrorBoundary extends React.Component {
@@ -67,6 +70,9 @@ function App() {
                 <Route path="/community" element={<Community />} />
                 <Route path="/cosmic-timeline" element={<CosmicTimeline />} />
                 <Route path="/instructor-verification" element={<InstructorVerification />} />
+                <Route path="/instructor-connect" element={<InstructorConnect />} />
+                <Route path="/instructor/portal" element={<InstructorPortal />} />
+                <Route path="/admin" element={<AdminPortal />} />
 
               </Routes>
             </ErrorBoundary>

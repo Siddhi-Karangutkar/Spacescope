@@ -36,12 +36,13 @@ const Navbar = () => {
                 <div className="navbar-links">
                     <Link to="/" className="nav-link">Home</Link>
                     <Link to="/dashboard" className="nav-link">Dashboard</Link>
-                    <Link to="/community" className="nav-link">Crew Quarters</Link>
+                    {/* <Link to="/community" className="nav-link">Crew Quarters</Link> */}
                     {/* <Link to="/cosmic-weather" className="nav-link">Cosmic Weather</Link>
                     <Link to="/space-events" className="nav-link">Space Events</Link>
                     <Link to="/asteroid-radar" className="nav-link">Asteroid Radar</Link>
                     <Link to="/missions" className="nav-link">Missions</Link>
                     <Link to="/learn" className="nav-link">Learn</Link> */}
+                    <Link to="/instructor-connect" className="nav-link">Connect</Link>
                     <Link to="/earth-link" className="nav-link highlight">EarthLink</Link>
 
                     <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle Theme">

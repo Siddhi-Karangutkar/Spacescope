@@ -12,7 +12,7 @@ const CosmicWeather = () => {
     const [loading, setLoading] = useState(true);
     const [weatherStatus, setWeatherStatus] = useState({ status: 'Loading...', color: 'text-gray-400', message: 'Analyzing data...' });
 
-    const API_BASE = 'http://localhost:5000/api';
+    const API_BASE = 'http://localhost:5002/api';
 
     const calculateStatus = (wind, k, bz) => {
         let score = 0;

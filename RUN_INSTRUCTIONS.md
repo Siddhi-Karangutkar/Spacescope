@@ -5,6 +5,7 @@ This project consists of two parts: a **Server** (Node.js/Express) and a **Clien
 ## Prerequisites
 - Node.js installed on your machine.
 - NPM (Node Package Manager) included with Node.js.
+- **PostgreSQL** installed and running locally.
 
 ## 1. Start the Server
 
@@ -17,11 +18,17 @@ This project consists of two parts: a **Server** (Node.js/Express) and a **Clien
    ```bash
    npm install
    ```
-4. Start the server:
-   ```bash
-   node index.js
-   ```
-   You should see: `Server is running on port 5000`
+    You should see: `Server is running on port 5000`
+
+## 2. Database Setup (PostgreSQL)
+
+1. **Create Database**: Open your PostgreSQL tool (pgAdmin, psql, etc.) and create a new database named `spacescope`.
+2. **Configure Environment**: 
+   - Open `server/.env`.
+   - Update `DATABASE_URL` with your local credentials:
+     `DATABASE_URL=postgres://[USER]:[PASSWORD]@localhost:5432/spacescope`
+   - Example: `DATABASE_URL=postgres://postgres:admin123@localhost:5432/spacescope`
+3. **Table Initialization**: The server automatically creates the required tables (`instructors`, `reports`, etc.) the first time it starts.
 
 ## 2. Start the Client
 

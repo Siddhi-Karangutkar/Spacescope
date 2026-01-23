@@ -2,6 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const axios = require('axios');
+const http = require('http');
+const { Server } = require('socket.io');
+const db = require('./db');
 
 dotenv.config();
 
@@ -9,10 +12,449 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // Increased limit for images/PDFs
+
+// DB Initialization
+const initDB = async () => {
+    try {
+        // Instructors table
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS instructors (
+                id SERIAL PRIMARY KEY,
+                name TEXT NOT NULL,
+                email TEXT UNIQUE NOT NULL,
+                role TEXT,
+                location TEXT,
+                approved_date DATE DEFAULT CURRENT_DATE,
+                image TEXT,
+                specialization TEXT,
+                status TEXT DEFAULT 'OFFLINE',
+                session_title TEXT,
+                session_link TEXT,
+                upcoming_session TIMESTAMP,
+                access_code TEXT UNIQUE -- Unique code for instructor login
+            )
+        `);
+
+        // Migration: Add missing columns if they don't exist (for existing DBs)
+        await db.query(`
+            DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='instructors' AND column_name='access_code') THEN
+                    ALTER TABLE instructors ADD COLUMN access_code TEXT UNIQUE;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='instructors' AND column_name='status') THEN
+                    ALTER TABLE instructors ADD COLUMN status TEXT DEFAULT 'OFFLINE';
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='instructors' AND column_name='session_title') THEN
+                    ALTER TABLE instructors ADD COLUMN session_title TEXT;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='instructors' AND column_name='session_link') THEN
+                    ALTER TABLE instructors ADD COLUMN session_link TEXT;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='instructors' AND column_name='upcoming_session') THEN
+                    ALTER TABLE instructors ADD COLUMN upcoming_session TIMESTAMP;
+                END IF;
+            END $$;
+        `);
+
+        // Backfill access codes for demo users if they are NULL
+        await db.query(`
+            UPDATE instructors SET access_code = 'CMD-ELENA' WHERE email = 'evance@astro.edu' AND access_code IS NULL;
+            UPDATE instructors SET access_code = 'CMD-MARCUS' WHERE email = 'mchen@cosmos.org' AND access_code IS NULL;
+        `);
+
+        // Sessions table
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS instructor_sessions (
+                id SERIAL PRIMARY KEY,
+                instructor_id INTEGER REFERENCES instructors(id) ON DELETE CASCADE,
+                title TEXT NOT NULL,
+                topic TEXT,
+                description TEXT,
+                start_time TIMESTAMP NOT NULL,
+                duration INTEGER, -- in minutes
+                status TEXT DEFAULT 'UPCOMING', -- UPCOMING, LIVE, COMPLETED
+                meeting_link TEXT,
+                student_count INTEGER DEFAULT 0
+            )
+        `);
+
+        // Applications table
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS instructor_applications (
+                id SERIAL PRIMARY KEY,
+                full_name TEXT NOT NULL,
+                email TEXT NOT NULL,
+                specialization TEXT,
+                bio TEXT,
+                resume TEXT,
+                certificate TEXT,
+                id_card TEXT,
+                status TEXT DEFAULT 'PENDING',
+                applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Reports table
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS reports (
+                id SERIAL PRIMARY KEY,
+                title TEXT NOT NULL,
+                content TEXT,
+                username TEXT,
+                status TEXT DEFAULT 'PENDING',
+                category TEXT,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                images TEXT[]
+            )
+        `);
+
+        // Doubts table
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS doubts (
+                id SERIAL PRIMARY KEY,
+                username TEXT,
+                question TEXT NOT NULL,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS doubt_replies (
+                id SERIAL PRIMARY KEY,
+                doubt_id INTEGER REFERENCES doubts(id) ON DELETE CASCADE,
+                username TEXT,
+                text TEXT NOT NULL,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // SEED DATA (Only if tables are empty)
+        const instructorCheck = await db.query('SELECT COUNT(*) FROM instructors');
+        if (parseInt(instructorCheck.rows[0].count) === 0) {
+            console.log('Seeding initial instructors...');
+            await db.query(`
+                INSERT INTO instructors (name, email, role, location, image, specialization, status, session_title, session_link, access_code) VALUES
+                ('Dr. Elena Vance', 'evance@astro.edu', 'Senior Astrophysicist', 'Geneva, Switzerland', 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200', 'Quantum Singularity', 'IN_SESSION', '🔴 Solar Storms Explained', 'https://meet.jit.si/SpaceScopeSolarStorms', 'CMD-ELENA'),
+                ('Prof. Marcus Chen', 'mchen@cosmos.org', 'Lead Researcher', 'Beijing, China', 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200', 'Exoplanetary Systems', 'ONLINE', NULL, NULL, 'CMD-MARCUS')
+            `);
+        }
+
+        // Seed Sessions (Check if missing and insert)
+        console.log('Verifying session data...');
+        await db.query(`
+            INSERT INTO instructor_sessions (instructor_id, title, topic, description, start_time, duration, status, meeting_link, student_count)
+            SELECT id, '🔴 Solar Storms Explained', 'Space Weather', 'Deep dive into the recent C-class flares and their impact on GPS satellites.', NOW() - INTERVAL '10 minutes', 45, 'LIVE', 'https://meet.jit.si/SpaceScopeSolarStorms', 142
+            FROM instructors WHERE email = 'evance@astro.edu'
+            AND NOT EXISTS (SELECT 1 FROM instructor_sessions WHERE title = '🔴 Solar Storms Explained');
+
+            INSERT INTO instructor_sessions (instructor_id, title, topic, description, start_time, duration, status, meeting_link, student_count)
+            SELECT id, 'Black Holes: Event Horizon', 'Astrophysics', 'Understanding the physics at the point of no return.', NOW() + INTERVAL '2 days', 90, 'UPCOMING', 'https://meet.jit.si/SpaceScopeBlackHoles', 0
+            FROM instructors WHERE email = 'evance@astro.edu'
+            AND NOT EXISTS (SELECT 1 FROM instructor_sessions WHERE title = 'Black Holes: Event Horizon');
+
+            INSERT INTO instructor_sessions (instructor_id, title, topic, description, start_time, duration, status, meeting_link, student_count)
+            SELECT id, 'Intro to Orbital Mechanics', 'Rocket Science', 'Basics of Hohmann transfer orbits.', NOW() - INTERVAL '3 days', 60, 'COMPLETED', 'https://meet.jit.si/SpaceScopeOrbital', 89
+            FROM instructors WHERE email = 'evance@astro.edu'
+            AND NOT EXISTS (SELECT 1 FROM instructor_sessions WHERE title = 'Intro to Orbital Mechanics');
+
+            -- Seed Sessions for Prof. Marcus Chen
+            INSERT INTO instructor_sessions (instructor_id, title, topic, description, start_time, duration, status, meeting_link, student_count)
+            SELECT id, 'Exoplanet Atmospheres', 'Exobiology', 'Analyzing spectroscopy data from JWST to find biosignatures.', NOW() + INTERVAL '5 hours', 60, 'UPCOMING', 'https://meet.jit.si/SpaceScopeExo', 0
+            FROM instructors WHERE email = 'mchen@cosmos.org'
+            AND NOT EXISTS (SELECT 1 FROM instructor_sessions WHERE title = 'Exoplanet Atmospheres');
+        `);
+
+        const reportCheck = await db.query('SELECT COUNT(*) FROM reports');
+        if (parseInt(reportCheck.rows[0].count) === 0) {
+            console.log('Seeding initial reports...');
+            await db.query(`
+                INSERT INTO reports (title, content, username, category, status, images) VALUES
+                ('Strange Aurora over Norway', 'Captured these unusual violet pillars during the last solar flare.', 'StarGazer_99', 'Observation', 'APPROVED', '{"/assets/community/aurora_fix.png"}'),
+                ('Meteor Impact? Small Crater Found', 'Found this small impact site while hiking. Looks fresh.', 'CitizenScience', 'Report', 'PENDING', '{"https://images-assets.nasa.gov/image/PIA23351/PIA23351~orig.jpg"}')
+            `);
+        }
+
+        const doubtCheck = await db.query('SELECT COUNT(*) FROM doubts');
+        if (parseInt(doubtCheck.rows[0].count) === 0) {
+            console.log('Seeding initial doubts...');
+            const res = await db.query(`
+                INSERT INTO doubts (username, question) VALUES
+                ('AstroNewbie', 'How do I calculate the orbital velocity of a satellite around Earth?')
+                RETURNING id
+            `);
+            const doubtId = res.rows[0].id;
+            await db.query(`
+                INSERT INTO doubt_replies (doubt_id, username, text) VALUES
+                ($1, 'CosmicGuru', 'You can use the formula v = sqrt(GM/r).')
+            `, [doubtId]);
+        }
+
+        await db.query(`ALTER TABLE instructors ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'OFFLINE'`);
+        await db.query(`ALTER TABLE instructors ADD COLUMN IF NOT EXISTS session_title TEXT`);
+        await db.query(`ALTER TABLE instructors ADD COLUMN IF NOT EXISTS session_link TEXT`);
+        await db.query(`ALTER TABLE instructors ADD COLUMN IF NOT EXISTS upcoming_session TIMESTAMP`);
+
+        console.log('PostgreSQL Database Initialized and Seeded');
+    } catch (err) {
+        console.error('Database Initialization Failed:', err);
+    }
+};
+
+initDB();
 
 app.get('/', (req, res) => {
-    res.send('SpaceScope Server is Running!');
+    res.send('SpaceScope Server is Running on PostgreSQL Node!');
+});
+
+// --- INSTRUCTOR APIS ---
+app.post('/api/instructor-applications', async (req, res) => {
+    try {
+        const { fullName, email, specialization, bio, resume, certificate, idCard } = req.body;
+        const result = await db.query(
+            'INSERT INTO instructor_applications (full_name, email, specialization, bio, resume, certificate, id_card) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+            [fullName, email, specialization, bio, resume, certificate, idCard]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/instructor-applications', async (req, res) => {
+    try {
+        const result = await db.query('SELECT * FROM instructor_applications WHERE status = \'PENDING\' ORDER BY applied_at DESC');
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/verify-instructor', async (req, res) => {
+    const { id, status, adminNote } = req.body;
+    try {
+        // 1. Update application status
+        const appResult = await db.query(
+            'UPDATE instructor_applications SET status = $1 WHERE id = $2 RETURNING *',
+            [status, id]
+        );
+
+        const applicant = appResult.rows[0];
+
+        // 2. If approved, transfer to instructors table
+        if (status === 'APPROVED' && applicant) {
+            await db.query(
+                `INSERT INTO instructors (name, email, role, location, image, specialization) 
+                 VALUES ($1, $2, $3, $4, $5, $6) 
+                 ON CONFLICT (email) DO NOTHING`,
+                [applicant.full_name, applicant.email, applicant.specialization, 'Remote Node', `https://ui-avatars.com/api/?name=${encodeURIComponent(applicant.full_name)}&background=22a6b3&color=fff`, applicant.specialization]
+            );
+
+            // Generate a random access code for the approved instructor
+            const accessCode = 'CMD-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+            await db.query(
+                'UPDATE instructors SET access_code = $1 WHERE email = $2',
+                [accessCode, applicant.email]
+            );
+            console.log(`Generated access code for ${applicant.email}: ${accessCode}`);
+        }
+
+        res.json({ message: `Application ${status.toLowerCase()} successfully` });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/instructors', async (req, res) => {
+    try {
+        const result = await db.query('SELECT * FROM instructors ORDER BY approved_date DESC');
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/instructors/:id', async (req, res) => {
+    try {
+        await db.query('DELETE FROM instructors WHERE id = $1', [req.params.id]);
+        res.json({ message: 'Instructor access revoked' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// --- SESSION MANAGEMENT APIS ---
+app.post('/api/instructor-login', async (req, res) => {
+    const { email, accessCode } = req.body;
+    try {
+        const result = await db.query(
+            'SELECT * FROM instructors WHERE email = $1 AND access_code = $2',
+            [email, accessCode]
+        );
+        if (result.rows.length > 0) {
+            res.json(result.rows[0]);
+        } else {
+            res.status(401).json({ error: 'Invalid credentials or non-verified access code.' });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/instructor-sessions', async (req, res) => {
+    const { instructorId } = req.query;
+    try {
+        const result = await db.query(
+            'SELECT * FROM instructor_sessions WHERE instructor_id = $1 ORDER BY start_time ASC',
+            [instructorId]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/instructor-sessions', async (req, res) => {
+    const { instructor_id, title, topic, description, start_time, duration } = req.body;
+    // Auto-generate a secure meeting link using Jitsi as a proxy
+    const meetingLink = `https://meet.jit.si/SpaceScope_${Math.random().toString(36).substring(7)}`;
+    try {
+        const result = await db.query(
+            `INSERT INTO instructor_sessions (instructor_id, title, topic, description, start_time, duration, meeting_link) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+            [instructor_id, title, topic, description, start_time, duration, meetingLink]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.patch('/api/instructor-sessions/:id', async (req, res) => {
+    const { status, student_count } = req.body;
+    try {
+        const result = await db.query(
+            'UPDATE instructor_sessions SET status = COALESCE($1, status), student_count = COALESCE($2, student_count) WHERE id = $3 RETURNING *',
+            [status, student_count, req.params.id]
+        );
+        res.json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/sessions/public', async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT s.*, i.name as instructor_name, i.image as instructor_image, i.specialization 
+            FROM instructor_sessions s
+            JOIN instructors i ON s.instructor_id = i.id
+            WHERE s.status IN ('UPCOMING', 'LIVE')
+            ORDER BY s.status DESC, s.start_time ASC
+            LIMIT 10
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.patch('/api/instructors/:id/status', async (req, res) => {
+    const { status, sessionTitle, sessionLink } = req.body;
+    try {
+        const result = await db.query(
+            'UPDATE instructors SET status = $1, session_title = $2, session_link = $3 WHERE id = $4 RETURNING *',
+            [status, sessionTitle, sessionLink, req.params.id]
+        );
+        res.json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// --- COMMUNITY APIS ---
+app.post('/api/reports', async (req, res) => {
+    try {
+        const { title, content, user, category, images } = req.body;
+        const result = await db.query(
+            'INSERT INTO reports (title, content, username, category, images) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            [title, content, user, category, images]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/reports', async (req, res) => {
+    try {
+        const { status } = req.query;
+        let query = 'SELECT * FROM reports';
+        let params = [];
+        if (status) {
+            query += ' WHERE status = $1';
+            params.push(status);
+        }
+        query += ' ORDER BY timestamp DESC';
+        const result = await db.query(query, params);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/reports/verify', async (req, res) => {
+    const { id, status } = req.body;
+    try {
+        await db.query('UPDATE reports SET status = $1 WHERE id = $2', [status, id]);
+        res.json({ message: `Report ${status.toLowerCase()}ed` });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/doubts', async (req, res) => {
+    try {
+        const result = await db.query('SELECT * FROM doubts ORDER BY timestamp DESC');
+        const doubts = result.rows;
+
+        // Fetch replies for each doubt
+        const doubtsWithReplies = await Promise.all(doubts.map(async (d) => {
+            const replyResult = await db.query('SELECT * FROM doubt_replies WHERE doubt_id = $1 ORDER BY timestamp ASC', [d.id]);
+            return { ...d, replies: replyResult.rows };
+        }));
+
+        res.json(doubtsWithReplies);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/doubts', async (req, res) => {
+    try {
+        const { user, question } = req.body;
+        const result = await db.query(
+            'INSERT INTO doubts (username, question) VALUES ($1, $2) RETURNING *',
+            [user, question]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/doubts/:id/replies', async (req, res) => {
+    try {
+        const { user, text } = req.body;
+        const result = await db.query(
+            'INSERT INTO doubt_replies (doubt_id, username, text) VALUES ($1, $2, $3) RETURNING *',
+            [req.params.id, user, text]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // Helper to convert NOAA DSCOVR array-of-arrays to objects
@@ -302,11 +744,9 @@ app.get('/api/eonet', async (req, res) => {
     }
 });
 
-const server = app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+const server = http.createServer(app);
 
-// Socket.io for SpaceScope Meet (WebRTC Signaling)
+// Socket.io for SpaceScope Meet & Real-time Chat
 const io = require('socket.io')(server, {
     cors: {
         origin: "*",
@@ -319,6 +759,18 @@ const rooms = {};
 io.on('connection', (socket) => {
     console.log('New connection:', socket.id);
 
+    // Chat Logic
+    socket.on('join_room', (roomId) => {
+        socket.join(roomId);
+        console.log(`Socket ${socket.id} joined chat room ${roomId}`);
+    });
+
+    socket.on('send_message', (data) => {
+        // data: { roomId, sender, text, timestamp }
+        io.to(data.roomId).emit('receive_message', data);
+    });
+
+    // WebRTC Logic (Existing)
     socket.on('join-room', (roomId) => {
         socket.join(roomId);
         console.log(`Socket ${socket.id} joined room ${roomId}`);
@@ -350,6 +802,10 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log('User disconnected:', socket.id);
     });
+});
+
+server.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
 
 // Explicit error handling for the server

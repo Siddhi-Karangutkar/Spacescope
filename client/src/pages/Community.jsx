@@ -1,121 +1,56 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Upload, CheckCircle, XCircle, MessageSquare, Image as ImageIcon, Send, ShieldCheck, Clock, Eye, HelpCircle } from 'lucide-react';
+import { Users, Upload, CheckCircle, XCircle, MessageSquare, Image as ImageIcon, Send, ShieldCheck, Clock, Eye, HelpCircle, UserPlus, FileText } from 'lucide-react';
 import './Community.css';
 
 const Community = () => {
-    const [view, setView] = useState('FEED'); // FEED, DOUBTS, SUBMIT, ADMIN
+    const [view, setView] = useState('FEED'); // FEED, DOUBTS, SUBMIT, INSTRUCTOR_JOIN
     const [reports, setReports] = useState([]);
     const [doubts, setDoubts] = useState([]);
     const [form, setForm] = useState({ title: '', content: '', category: 'Observation', images: [] });
     const [doubtForm, setDoubtForm] = useState({ question: '' });
+    const [instructorForm, setInstructorForm] = useState({
+        fullName: '',
+        email: '',
+        specialization: '',
+        bio: '',
+        resume: null,
+        certificate: null,
+        idCard: null
+    });
     const [replyForm, setReplyForm] = useState({ doubtId: null, text: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [loginForm, setLoginForm] = useState({ email: '', accessCode: '' });
+    const [loginError, setLoginError] = useState('');
 
     // Initial Load
     useEffect(() => {
-        const saved = localStorage.getItem('spacescope_reports');
-        if (saved) {
-            let parsed = JSON.parse(saved);
-            // MIGRATION: Fix the accidental car image or update to custom aurora
-            const oldCarUrl = "https://images.unsplash.com/photo-1573074617613-fc8ef27eaa2f?auto=format&fit=crop&q=80&w=800";
-            const oldAuroraUrl = "https://images.unsplash.com/photo-1531366930472-358045768e82?auto=format&fit=crop&q=80&w=800";
-            const customAuroraUrl = "/assets/community/aurora_fix.png";
-
-            let updated = false;
-            parsed = parsed.map(r => {
-                if (r.images && (r.images.includes(oldCarUrl) || r.images.includes(oldAuroraUrl))) {
-                    updated = true;
-                    return { ...r, images: r.images.map(img => (img === oldCarUrl || img === oldAuroraUrl) ? customAuroraUrl : img) };
-                }
-                return r;
-            });
-
-            if (updated) {
-                setReports(parsed);
-                localStorage.setItem('spacescope_reports', JSON.stringify(parsed));
-            } else {
-                setReports(parsed);
-            }
-        } else {
-            // Initial Seed Data for Reports
-            const seed = [
-                {
-                    id: 1,
-                    title: "Strange Aurora over Norway",
-                    content: "Captured these unusual violet pillars during the last solar flare. Never seen this color intensity before!",
-                    user: "StarGazer_99",
-                    status: "APPROVED",
-                    category: "Observation",
-                    timestamp: new Date(Date.now() - 86400000).toISOString(),
-                    images: ["/assets/community/aurora_fix.png"]
-                },
-                {
-                    id: 2,
-                    title: "Urban Light Pollution Report",
-                    content: "Requesting more dark sky initiatives in Mumbai. The Bortle scale here is reaching critical levels for amateur astronomy.",
-                    user: "AstroAmateur",
-                    status: "APPROVED",
-                    category: "Opinion",
-                    timestamp: new Date(Date.now() - 172800000).toISOString(),
-                    images: []
-                },
-                {
-                    id: 3,
-                    title: "Meteor Impact? Small Crater Found",
-                    content: "Found this small impact site while hiking. Looks fresh. Anyone else hear a sonic boom last night?",
-                    user: "CitizenScience",
-                    status: "PENDING",
-                    category: "Report",
-                    timestamp: new Date().toISOString(),
-                    images: ["https://images-assets.nasa.gov/image/PIA23351/PIA23351~orig.jpg"]
-                }
-            ];
-            setReports(seed);
-            localStorage.setItem('spacescope_reports', JSON.stringify(seed));
-        }
-
-        // Load Doubts
-        const savedDoubts = localStorage.getItem('spacescope_doubts');
-        if (savedDoubts) {
-            setDoubts(JSON.parse(savedDoubts));
-        } else {
-            const seedDoubts = [
-                {
-                    id: 1,
-                    user: "AstroNewbie",
-                    question: "How do I calculate the orbital velocity of a satellite around Earth?",
-                    timestamp: new Date(Date.now() - 3600000).toISOString(),
-                    replies: [
-                        { user: "CosmicGuru", text: "You can use the formula v = sqrt(GM/r), where G is the gravitational constant, M is Earth's mass, and r is the distance from the center of Earth.", timestamp: new Date(Date.now() - 1800000).toISOString() }
-                    ]
-                },
-                {
-                    id: 2,
-                    user: "SpaceFan_01",
-                    question: "What's the best time to see the ISS passing over New York this week?",
-                    timestamp: new Date(Date.now() - 7200000).toISOString(),
-                    replies: []
-                }
-            ];
-            setDoubts(seedDoubts);
-            localStorage.setItem('spacescope_doubts', JSON.stringify(seedDoubts));
-        }
+        fetchReports();
+        fetchDoubts();
     }, []);
 
-    const saveReports = (newReports) => {
-        setReports(newReports);
-        localStorage.setItem('spacescope_reports', JSON.stringify(newReports));
+    const fetchReports = async () => {
+        try {
+            const res = await fetch('http://localhost:5002/api/reports?status=APPROVED');
+            const data = await res.json();
+            setReports(data);
+        } catch (err) {
+            console.error('Error fetching reports:', err);
+        }
     };
 
-    const saveDoubts = (newDoubts) => {
-        setDoubts(newDoubts);
-        localStorage.setItem('spacescope_doubts', JSON.stringify(newDoubts));
+    const fetchDoubts = async () => {
+        try {
+            const res = await fetch('http://localhost:5002/api/doubts');
+            const data = await res.json();
+            setDoubts(data);
+        } catch (err) {
+            console.error('Error fetching doubts:', err);
+        }
     };
 
     // Form Handlers
     const handleFileChange = (e) => {
         const files = Array.from(e.target.files);
-        // Simple base64 conversion for LocalStorage storage (Note: large images might hit limit, kept small for demo)
         files.forEach(file => {
             const reader = new FileReader();
             reader.onloadend = () => {
@@ -125,67 +60,107 @@ const Community = () => {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleInstructorFileChange = (e, field) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setInstructorForm(prev => ({ ...prev, [field]: reader.result }));
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
 
-        const newReport = {
-            id: Date.now(),
-            ...form,
-            user: "Guest_User",
-            status: "PENDING",
-            timestamp: new Date().toISOString()
-        };
+        try {
+            const res = await fetch('http://localhost:5002/api/reports', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...form,
+                    user: "Guest_User"
+                })
+            });
 
-        const updated = [newReport, ...reports];
-        saveReports(updated);
-
-        setTimeout(() => {
+            if (res.ok) {
+                setForm({ title: '', content: '', category: 'Observation', images: [] });
+                setView('FEED');
+                alert("Report submitted! It is now waiting for Admin validation.");
+                fetchReports();
+            }
+        } catch (err) {
+            console.error('Error submitting report:', err);
+        } finally {
             setIsSubmitting(false);
-            setForm({ title: '', content: '', category: 'Observation', images: [] });
-            setView('FEED');
-            alert("Report submitted! It is now waiting for Admin validation.");
-        }, 1000);
-    };
-
-    // Admin Handlers
-    const handleAdminAction = (id, status) => {
-        const updated = reports.map(r => r.id === id ? { ...r, status } : r);
-        saveReports(updated);
+        }
     };
 
     // Doubt Handlers
-    const handleDoubtSubmit = (e) => {
+    const handleDoubtSubmit = async (e) => {
         e.preventDefault();
-        const newDoubt = {
-            id: Date.now(),
-            user: "Student_X",
-            question: doubtForm.question,
-            timestamp: new Date().toISOString(),
-            replies: []
-        };
-        const updated = [newDoubt, ...doubts];
-        saveDoubts(updated);
-        setDoubtForm({ question: '' });
+        try {
+            const res = await fetch('http://localhost:5002/api/doubts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user: "Student_X",
+                    question: doubtForm.question
+                })
+            });
+            if (res.ok) {
+                setDoubtForm({ question: '' });
+                fetchDoubts();
+            }
+        } catch (err) {
+            console.error('Error submitting doubt:', err);
+        }
     };
 
-    const handleReplySubmit = (e, doubtId) => {
+    const handleReplySubmit = async (e, doubtId) => {
         e.preventDefault();
-        const updated = doubts.map(d => {
-            if (d.id === doubtId) {
-                return {
-                    ...d,
-                    replies: [...d.replies, {
-                        user: "Space_Explorer",
-                        text: replyForm.text,
-                        timestamp: new Date().toISOString()
-                    }]
-                };
+        try {
+            const res = await fetch(`http://localhost:5002/api/doubts/${doubtId}/replies`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user: "Space_Explorer",
+                    text: replyForm.text
+                })
+            });
+            if (res.ok) {
+                setReplyForm({ doubtId: null, text: '' });
+                fetchDoubts();
             }
-            return d;
-        });
-        saveDoubts(updated);
-        setReplyForm({ doubtId: null, text: '' });
+        } catch (err) {
+            console.error('Error submitting reply:', err);
+        }
+    };
+
+    const handleInstructorLogin = async (e) => {
+        e.preventDefault();
+        setLoginError('');
+        setIsSubmitting(true);
+        try {
+            const res = await fetch('http://localhost:5002/api/instructor-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(loginForm)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                localStorage.setItem('instructorInfo', JSON.stringify(data));
+                window.location.href = '/instructor/portal';
+            } else {
+                setLoginError(data.error || 'Login failed');
+            }
+        } catch (err) {
+            setLoginError('Server connection failed');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const approvedReports = reports.filter(r => r.status === 'APPROVED');
@@ -204,8 +179,8 @@ const Community = () => {
                 <button className={`nav-tab ${view === 'SUBMIT' ? 'active' : ''}`} onClick={() => setView('SUBMIT')}>
                     <Upload size={20} /> Contribute
                 </button>
-                <button className={`nav-tab ${view === 'ADMIN' ? 'active' : ''}`} onClick={() => setView('ADMIN')}>
-                    <ShieldCheck size={20} /> Commander Review {pendingReports.length > 0 && <span className="notif-dot">{pendingReports.length}</span>}
+                <button className={`nav-tab ${view === 'INSTRUCTOR_JOIN' ? 'active' : ''}`} onClick={() => setView('INSTRUCTOR_JOIN')}>
+                    <UserPlus size={20} /> Are you an Instructor?
                 </button>
             </div>
 
@@ -357,36 +332,110 @@ const Community = () => {
                     </div>
                 )}
 
-                {view === 'ADMIN' && (
-                    <div className="admin-view">
-                        <div className="admin-header">
-                            <h2>Command Center: Validation Hub</h2>
-                            <p>As an admin, review incoming data for accuracy and relevance.</p>
-                        </div>
-                        <div className="admin-list">
-                            {pendingReports.length > 0 ? pendingReports.map(report => (
-                                <div key={report.id} className="admin-item glass-panel">
-                                    <div className="admin-item-info">
-                                        <div className="item-head">
-                                            <span className="item-user">@{report.user}</span>
-                                            <span className="item-date">{new Date(report.timestamp).toLocaleString()}</span>
-                                        </div>
-                                        <h3>{report.title}</h3>
-                                        <p>{report.content}</p>
-                                        <div className="admin-images">
-                                            {report.images.map((img, i) => <img key={i} src={img} alt="Evidence" />)}
-                                        </div>
+                {view === 'INSTRUCTOR_JOIN' && (
+                    <div className="instructor-join-container">
+                        <div className="instructor-form-view glass-panel fade-in">
+                            <div className="form-head">
+                                <h2>Join the Elite Faculty</h2>
+                                <p>Apply to become a verified SpaceScope Instructor and mentor the next generation of explorers.</p>
+                            </div>
+
+                            <form onSubmit={async (e) => {
+                                e.preventDefault();
+                                setIsSubmitting(true);
+                                try {
+                                    const res = await fetch('http://localhost:5002/api/instructor-applications', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify(instructorForm)
+                                    });
+                                    if (res.ok) {
+                                        alert("Application transmitted! Our Command Center will review your credentials.");
+                                        setView('FEED');
+                                    }
+                                } catch (err) {
+                                    console.error('Error submitting application:', err);
+                                } finally {
+                                    setIsSubmitting(false);
+                                }
+                            }} className="instructor-form">
+
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label>Full Name</label>
+                                        <input required placeholder="Dr. Jane Doe" onChange={e => setInstructorForm({ ...instructorForm, fullName: e.target.value })} />
                                     </div>
-                                    <div className="admin-actions">
-                                        <button className="approve-btn" onClick={() => handleAdminAction(report.id, 'APPROVED')}>
-                                            <CheckCircle size={20} /> Verify
-                                        </button>
-                                        <button className="reject-btn" onClick={() => handleAdminAction(report.id, 'REJECTED')}>
-                                            <XCircle size={20} /> Reject
-                                        </button>
+                                    <div className="form-group">
+                                        <label>Email Address</label>
+                                        <input required type="email" placeholder="jane@institute.edu" onChange={e => setInstructorForm({ ...instructorForm, email: e.target.value })} />
                                     </div>
                                 </div>
-                            )) : <div className="empty-msg">No pending requests. Great job, Commander!</div>}
+
+                                <div className="form-group">
+                                    <label>Specialization</label>
+                                    <input required placeholder="e.g. Exoplanet Topology, Orbital Mechanics" onChange={e => setInstructorForm({ ...instructorForm, specialization: e.target.value })} />
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Short Bio</label>
+                                    <textarea rows="3" placeholder="Tell us about your research or teaching experience..." onChange={e => setInstructorForm({ ...instructorForm, bio: e.target.value })} />
+                                </div>
+
+                                <div className="upload-grid">
+                                    <div className="upload-field">
+                                        <label><FileText size={16} /> CV / Resume</label>
+                                        <input type="file" required onChange={e => handleInstructorFileChange(e, 'resume')} />
+                                    </div>
+                                    <div className="upload-field">
+                                        <label><FileText size={16} /> PhD Certificate</label>
+                                        <input type="file" required onChange={e => handleInstructorFileChange(e, 'certificate')} />
+                                    </div>
+                                    <div className="upload-field">
+                                        <label><ShieldCheck size={16} /> Identity (Govt ID)</label>
+                                        <input type="file" required onChange={e => handleInstructorFileChange(e, 'idCard')} />
+                                    </div>
+                                </div>
+
+                                <button type="submit" className="submit-action-btn" disabled={isSubmitting}>
+                                    {isSubmitting ? "Uploading Documents..." : "Submit Application"}
+                                </button>
+                            </form>
+                        </div>
+
+                        <div className="instructor-login-section glass-panel fade-in">
+                            <div className="form-head">
+                                <h2>Verified Instructor Login</h2>
+                                <p>Already a verified instructor? Enter your credentials to manage your sessions.</p>
+                            </div>
+
+                            <form onSubmit={handleInstructorLogin} className="instructor-form">
+                                <div className="form-group">
+                                    <label>Email Address</label>
+                                    <input
+                                        required
+                                        type="email"
+                                        placeholder="your@email.com"
+                                        value={loginForm.email}
+                                        onChange={e => setLoginForm({ ...loginForm, email: e.target.value })}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>Instructor Access Code</label>
+                                    <input
+                                        required
+                                        type="password"
+                                        placeholder="CMD-XXXXXX"
+                                        value={loginForm.accessCode}
+                                        onChange={e => setLoginForm({ ...loginForm, accessCode: e.target.value })}
+                                    />
+                                </div>
+
+                                {loginError && <div className="error-msg">{loginError}</div>}
+
+                                <button type="submit" className="submit-action-btn" disabled={isSubmitting}>
+                                    {isSubmitting ? "Authenticating..." : "Enter Command Center"}
+                                </button>
+                            </form>
                         </div>
                     </div>
                 )}

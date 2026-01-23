@@ -309,119 +309,6 @@
     cursor: not-allowed;
 }
 
-/* ADMIN VIEW */
-.admin-view {
-    max-width: 1000px;
-    margin: 0 auto;
-}
-
-.admin-header {
-    margin-bottom: 2rem;
-    text-align: center;
-}
-
-.admin-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.admin-item {
-    display: flex;
-    gap: 2rem;
-    padding: 2rem;
-    align-items: flex-start;
-}
-
-.admin-item-info {
-    flex-grow: 1;
-}
-
-.item-head {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 1rem;
-}
-
-.item-user {
-    color: var(--accent-blue, #2196f3);
-}
-
-.item-date {
-    font-size: 0.8rem;
-    color: #666;
-}
-
-.admin-item h3 {
-    margin-bottom: 1rem;
-}
-
-.admin-item p {
-    color: #aaa;
-    line-height: 1.5;
-}
-
-.admin-images {
-    display: flex;
-    gap: 10px;
-    margin-top: 1.5rem;
-}
-
-.admin-images img {
-    height: 100px;
-    border-radius: 6px;
-}
-
-.admin-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    min-width: 150px;
-}
-
-.approve-btn,
-.reject-btn {
-    padding: 0.75rem;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: bold;
-    transition: 0.3s;
-}
-
-.approve-btn {
-    background: rgba(76, 175, 80, 0.1);
-    color: #4caf50;
-    border: 1px solid rgba(76, 175, 80, 0.2);
-}
-
-.approve-btn:hover {
-    background: #4caf50;
-    color: #fff;
-}
-
-.reject-btn {
-    background: rgba(244, 67, 54, 0.1);
-    color: #f44336;
-    border: 1px solid rgba(244, 67, 54, 0.2);
-}
-
-.reject-btn:hover {
-    background: #f44336;
-    color: #fff;
-}
-
-.empty-msg {
-    text-align: center;
-    padding: 4rem;
-    color: #555;
-    border: 2px dashed rgba(255, 255, 255, 0.05);
-    border-radius: 20px;
-}
-
 /* DOUBTS VIEW */
 .doubts-view {
     max-width: 900px;
@@ -596,11 +483,100 @@
     transform: scale(1.05);
 }
 
+/* INSTRUCTOR FORM VIEW */
+.instructor-form-view {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 3rem;
+}
+
+.form-head {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.form-head h2 {
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+    color: var(--accent-blue, #2196f3);
+}
+
+.instructor-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.upload-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin: 1rem 0;
+}
+
+.upload-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.upload-field label {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.upload-field input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 0.5rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+}
+
+/* INSTRUCTOR JOIN / LOGIN SPLIT */
+.instructor-join-container {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.instructor-login-section {
+    padding: 3rem;
+    height: fit-content;
+}
+
+.error-msg {
+    color: #ff5252;
+    background: rgba(255, 82, 82, 0.1);
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    text-align: center;
+    border: 1px solid rgba(255, 82, 82, 0.2);
+}
+
 /* RESPONSIVE */
+@media (max-width: 1200px) {
+    .instructor-join-container {
+        grid-template-columns: 1fr;
+    }
+}
+
 @media (max-width: 768px) {
     .community-container {
         padding: 6rem 1rem 1rem !important;
-        /* Fixed overlap */
     }
 
     .doubt-form {
@@ -608,17 +584,12 @@
         align-items: stretch;
     }
 
-    .admin-item {
-        flex-direction: column;
+    .form-row {
+        grid-template-columns: 1fr;
     }
 
-    .admin-actions {
-        flex-direction: row;
-        width: 100%;
-    }
-
-    .admin-actions button {
-        flex: 1;
+    .instructor-form-view {
+        padding: 1.5rem;
     }
 
     .submit-view {

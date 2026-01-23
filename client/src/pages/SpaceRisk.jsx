@@ -33,7 +33,7 @@ const SpaceRisk = () => {
             const current = weatherData.current;
 
             // 3. Real-Time Space Weather (Kp-Index & Proton Flux)
-            const API_BASE = 'http://localhost:5000/api';
+            const API_BASE = 'http://localhost:5002/api';
             const [kRes, protonRes] = await Promise.all([
                 fetch(`${API_BASE}/k-index`),
                 fetch(`${API_BASE}/proton-flux`)

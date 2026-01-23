@@ -12,7 +12,7 @@ const AsteroidRadar = () => {
     const [loadingDetails, setLoadingDetails] = useState(false);
     const canvasRef = useRef(null);
 
-    const API_BASE = 'http://localhost:5000/api';
+    const API_BASE = 'http://localhost:5002/api';
 
     useEffect(() => {
         const fetchData = async () => {

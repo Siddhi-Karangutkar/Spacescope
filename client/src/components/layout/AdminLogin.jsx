@@ -15,7 +15,7 @@ const AdminLogin = ({ onClose }) => {
             onClose(); // Close modal
             // Save valid session briefly to allow access mostly
             sessionStorage.setItem('isAdminAuthenticated', 'true');
-            navigate('/instructor-verification'); // Redirect to verification dashboard
+            navigate('/admin'); // Redirect to central admin portal
         } else {
             setError('Access Denied: Invalid Credentials');
             setPassword('');

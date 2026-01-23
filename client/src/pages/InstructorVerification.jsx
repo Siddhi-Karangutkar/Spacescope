@@ -14,62 +14,203 @@ import {
 import Navbar from '../components/layout/Navbar';
 import './InstructorVerification.css';
 
-const InstructorVerification = () => {
+const InstructorVerification = ({ isEmbedded = false, applicantData = null, onAction = null }) => {
     const [activeTab, setActiveTab] = useState('resume');
     const [isOcrProcessing, setIsOcrProcessing] = useState(false);
     const [zoomLevel, setZoomLevel] = useState(1);
     const [adminNote, setAdminNote] = useState('');
+    const [verificationStatus, setVerificationStatus] = useState('pending'); // pending, approved, rejected, requested
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [analysisLogs, setAnalysisLogs] = useState([]);
+    const [trustScore, setTrustScore] = useState(0);
+    const [checklistState, setChecklistState] = useState({
+        kyc: 'pending',
+        phd: 'pending',
+        background: 'pending'
+    });
 
-    // Mock Instructor Data
-    const instructorData = {
+    // Mock/Dynamic Instructor Data
+    const instructorData = applicantData ? {
+        id: applicantData.id,
+        name: applicantData.fullName,
+        applicantId: `INST-${applicantData.id.toString().slice(-4)}`,
+        submittedAt: new Date(applicantData.appliedAt).toLocaleString(),
+        aiScore: 92, // Simulated AI Score for new applicants
+        email: applicantData.email,
+        specialization: applicantData.specialization,
+        bio: applicantData.bio
+    } : {
+        id: 'MOCK-1',
         name: "Dr. Elena Vance",
         applicantId: "INST-2026-X92",
         submittedAt: "2026-01-23 09:42 AM",
         aiScore: 94,
+        email: "evance@astro.edu",
+        specialization: "Quantum Singularity"
     };
 
     // Documents State
     const documents = {
         resume: {
             id: 'resume',
-            label: 'CV / Resume',
+            label: applicantData ? `CV: ${applicantData.resume?.substring(0, 15)}...` : 'CV / Resume',
             status: 'verified',
-            url: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&q=80&w=800', // Mock doc image
+            url: (applicantData?.resume?.startsWith('data:')) ? applicantData.resume : '/assets/admin/resume.png',
             confidence: 98,
             issues: []
         },
         certificate: {
             id: 'certificate',
-            label: 'PhD Astrophysics',
+            label: applicantData ? `PhD: ${applicantData.certificate?.substring(0, 15)}...` : 'PhD Astrophysics',
             status: 'verified',
-            url: 'https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?auto=format&fit=crop&q=80&w=800', // Mock cert
+            url: (applicantData?.certificate?.startsWith('data:')) ? applicantData.certificate : '/assets/admin/certificate.png',
             confidence: 96,
             issues: []
         },
         identity: {
             id: 'identity',
-            label: 'Govt. ID',
-            status: 'flagged',
-            url: 'https://images.unsplash.com/photo-1555529733-0e670560f7e1?auto=format&fit=crop&q=80&w=800', // Mock ID
-            confidence: 72,
-            issues: ['Expiry Date unclear', 'Hologram reflection low']
+            label: applicantData ? `ID: ${applicantData.idCard?.substring(0, 15)}...` : 'Govt. ID',
+            status: 'verified',
+            url: (applicantData?.idCard?.startsWith('data:')) ? applicantData.idCard : '/assets/admin/id_card.png',
+            confidence: 92,
+            issues: []
         }
     };
 
-    // Simulate OCR when switching tabs
+    // AI Analysis Simulation Engine
     useEffect(() => {
-        setIsOcrProcessing(true);
-        const timer = setTimeout(() => setIsOcrProcessing(false), 800);
-        return () => clearTimeout(timer);
-    }, [activeTab]);
+        if (!applicantData) return;
+
+        const performAnalysis = async () => {
+            setIsAnalyzing(true);
+            setIsOcrProcessing(true);
+            setAnalysisLogs([]);
+
+            const addLog = (msg, delay, color = null) => {
+                return new Promise(resolve => {
+                    setTimeout(() => {
+                        setAnalysisLogs(prev => [...prev, {
+                            time: new Date().toLocaleTimeString().split(' ')[0],
+                            msg,
+                            color
+                        }]);
+                        resolve();
+                    }, delay);
+                });
+            };
+
+            // INITIAL SCAN
+            await addLog(`Initializing scanner for ${activeTab.toUpperCase()}...`, 500);
+            await addLog(`Extracting metadata hash...`, 800);
+
+            let newChecklist = { ...checklistState };
+            let scoreBoost = 0;
+
+            if (activeTab === 'resume') {
+                await addLog(`Scanning for ${instructorData.name} credentials...`, 1000);
+                // Simulate keyword matching
+                const hasName = instructorData.name.length > 5;
+                const hasSpecialty = instructorData.specialization.length > 3;
+
+                if (hasName) {
+                    await addLog(`PASSED: Identity string "${instructorData.name}" located.`, 600, 'text-green-400');
+                    newChecklist.kyc = 'verified';
+                    scoreBoost += 30;
+                }
+                if (hasSpecialty) {
+                    await addLog(`ANALYZING: Professional field "${instructorData.specialization}"...`, 800);
+                    await addLog(`VERIFIED: Peer-reviewed history matches Interstellar database.`, 1000, 'text-green-400');
+                    newChecklist.background = 'verified';
+                    scoreBoost += 35;
+                }
+            } else if (activeTab === 'certificate') {
+                await addLog(`Verifying digital seal for PhD Doctorate...`, 1200);
+                await addLog(`Contacting University of Neo-Terra archives...`, 1500);
+                await addLog(`SUCCESS: Academic credentials authenticated.`, 1000, 'text-green-400');
+                newChecklist.phd = 'verified';
+                scoreBoost += 30;
+            } else if (activeTab === 'identity') {
+                await addLog(`Scanning biometric data from Govt ID...`, 1000);
+                await addLog(`Neural hash matching in progress...`, 1200);
+                await addLog(`CONFIRMED: Identity ID matches applicant node.`, 800, 'text-green-400');
+                newChecklist.kyc = 'verified';
+                scoreBoost += 35;
+            }
+
+            setChecklistState(newChecklist);
+            setTrustScore(prev => Math.min(98, prev + scoreBoost));
+            setIsAnalyzing(false);
+            setIsOcrProcessing(false);
+        };
+
+        performAnalysis();
+    }, [activeTab, applicantData]);
 
     const handleZoom = (delta) => {
         setZoomLevel(prev => Math.min(Math.max(prev + delta, 0.5), 2));
     };
 
+    const handleAction = async (status) => {
+        const dbStatus = status.toUpperCase() === 'APPROVED' ? 'APPROVED' : status.toUpperCase() === 'REJECTED' ? 'REJECTED' : 'REQUESTED';
+
+        try {
+            const res = await fetch('http://localhost:5002/api/verify-instructor', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: applicantData.id,
+                    status: dbStatus,
+                    adminNote: adminNote
+                })
+            });
+
+            if (res.ok) {
+                setVerificationStatus(status);
+                if (onAction) onAction(status, applicantData);
+            }
+        } catch (err) {
+            console.error('Error verifying instructor:', err);
+        }
+    };
+
+    const handleBack = () => {
+        if (onAction) onAction('back');
+    };
+
+    if (verificationStatus !== 'pending') {
+        return (
+            <div className="verification-success-overlay glass-panel">
+                <div className="success-content">
+                    {verificationStatus === 'approved' ? (
+                        <>
+                            <UserCheck size={64} className="text-green-400" />
+                            <h2>Instructor Approved</h2>
+                            <p>{instructorData.name} has been added to the active roster.</p>
+                        </>
+                    ) : verificationStatus === 'rejected' ? (
+                        <>
+                            <XOctagon size={64} className="text-red-400" />
+                            <h2>Application Rejected</h2>
+                            <p>The applicant has been notified of the decision.</p>
+                        </>
+                    ) : (
+                        <>
+                            <RefreshCw size={64} className="text-yellow-400" />
+                            <h2>Re-upload Requested</h2>
+                            <p>Instructor has been asked to provide clearer documentation.</p>
+                        </>
+                    )}
+                    <button className="btn btn-confirm" onClick={handleBack}>
+                        Return to Dashboard
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="verification-container">
-            <Navbar />
+        <div className={`verification-container ${isEmbedded ? 'embedded' : ''}`}>
+            {!isEmbedded && <Navbar />}
 
             {/* Header */}
             <header className="verification-header">
@@ -112,7 +253,7 @@ const InstructorVerification = () => {
                                 <p>Running Optical Character Recognition...</p>
                             </div>
                         ) : (
-                            <>
+                            <div className="preview-container">
                                 <img
                                     src={documents[activeTab].url}
                                     alt="Document Preview"
@@ -120,16 +261,26 @@ const InstructorVerification = () => {
                                     style={{ transform: `scale(${zoomLevel})` }}
                                 />
 
+                                {/* Uploaded Filename Overlay */}
+                                <div className="filename-overlay">
+                                    <FileText size={12} />
+                                    <span>{documents[activeTab].label}</span>
+                                </div>
+
                                 {/* Simulated Highlights */}
-                                <div className="ocr-highlight" style={{ top: '20%', left: '10%', width: '30%', height: '5%' }} title="Name Match: 100%"></div>
-                                <div className="ocr-highlight" style={{ top: '28%', left: '10%', width: '15%', height: '4%' }} title="Date Verified"></div>
+                                {activeTab === 'resume' && (
+                                    <>
+                                        <div className="ocr-highlight" style={{ top: '10%', left: '10%', width: '40%', height: '5%' }} title="Name Recognized"></div>
+                                        <div className="ocr-highlight" style={{ top: '22%', left: '10%', width: '30%', height: '4%' }} title="PhD Verified"></div>
+                                    </>
+                                )}
 
                                 <div className="zoom-controls">
                                     <button className="zoom-btn" onClick={() => handleZoom(-0.1)}><ZoomOut size={18} /></button>
                                     <span>{Math.round(zoomLevel * 100)}%</span>
                                     <button className="zoom-btn" onClick={() => handleZoom(0.1)}><ZoomIn size={18} /></button>
                                 </div>
-                            </>
+                            </div>
                         )}
                     </div>
                 </div>
@@ -148,51 +299,49 @@ const InstructorVerification = () => {
                                     style={{ strokeDashoffset: 251 - (251 * instructorData.aiScore) / 100 }}
                                 />
                             </svg>
-                            <span className="score-value">{instructorData.aiScore}%</span>
+                            <span className="score-value">{trustScore}%</span>
                         </div>
                         <div className="score-details">
                             <h3>AI Trust Score</h3>
-                            <p>Calculated based on cross-referencing databases and document metadata.</p>
+                            <p>Global space-identity match: {trustScore > 80 ? 'HIGH CONFIDENCE' : 'ANALYZING'}</p>
+                            <div className="ai-analysis-log glass-panel">
+                                {analysisLogs.map((log, i) => (
+                                    <div key={i} className={`log-entry ${log.color || ''}`}>
+                                        <span className="log-time">{log.time}</span>
+                                        <span className="log-msg">{log.msg}</span>
+                                    </div>
+                                ))}
+                                {isAnalyzing && <div className="log-entry pulse">Scanning...</div>}
+                            </div>
                         </div>
                     </div>
 
                     {/* Checklist */}
                     <div className="checklist-card">
-                        <h3>
-                            Verification Checklist
-                            <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Auto-checked: {instructorData.submittedAt}</span>
-                        </h3>
+                        <h3>Verification Checklist</h3>
 
                         <div className="checklist-item">
                             <div className="check-label">
-                                <CheckCircle size={16} className="text-green-400" />
+                                <CheckCircle size={16} className={checklistState.kyc === 'verified' ? 'text-green-400' : 'text-slate-500'} />
                                 <span>Identity Verification (KYC)</span>
                             </div>
-                            <span className="status-badge verified">PASSED</span>
+                            <span className={`status-badge ${checklistState.kyc}`}>{checklistState.kyc.toUpperCase()}</span>
                         </div>
 
                         <div className="checklist-item">
                             <div className="check-label">
-                                <CheckCircle size={16} className="text-green-400" />
-                                <span>Academic Credentials</span>
+                                <CheckCircle size={16} className={checklistState.phd === 'verified' ? 'text-green-400' : 'text-slate-500'} />
+                                <span>PhD Authenticity Check</span>
                             </div>
-                            <span className="status-badge verified">VERIFIED (MIT)</span>
+                            <span className={`status-badge ${checklistState.phd}`}>{checklistState.phd.toUpperCase()}</span>
                         </div>
 
                         <div className="checklist-item">
                             <div className="check-label">
-                                <CheckCircle size={16} className="text-green-400" />
-                                <span>Employment History</span>
+                                <CheckCircle size={16} className={checklistState.background === 'verified' ? 'text-green-400' : 'text-slate-500'} />
+                                <span>Professional Background</span>
                             </div>
-                            <span className="status-badge verified">CONFIRMED</span>
-                        </div>
-
-                        <div className="checklist-item">
-                            <div className="check-label">
-                                <AlertTriangle size={16} className="text-yellow-400" />
-                                <span>ID Expiration Check</span>
-                            </div>
-                            <span className="status-badge warning">NEAR EXPIRY</span>
+                            <span className={`status-badge ${checklistState.background}`}>{checklistState.background.toUpperCase()}</span>
                         </div>
                     </div>
 
@@ -200,23 +349,23 @@ const InstructorVerification = () => {
                     <div className="action-panel">
                         <textarea
                             className="admin-note"
-                            placeholder="Add internal notes for potential audit..."
+                            placeholder="Add final review notes..."
                             rows="2"
                             value={adminNote}
                             onChange={(e) => setAdminNote(e.target.value)}
                         />
                         <div className="action-buttons">
-                            <button className="btn btn-reject">
+                            <button className="btn btn-reject" onClick={() => handleAction('rejected')}>
                                 <XOctagon size={18} />
                                 Reject
                             </button>
-                            <button className="btn" style={{ background: '#334155', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }}>
+                            <button className="btn btn-request" onClick={() => handleAction('requested')}>
                                 <RefreshCw size={18} />
-                                Request Re-upload
+                                Re-upload
                             </button>
-                            <button className="btn btn-approve">
+                            <button className="btn btn-approve" onClick={() => handleAction('approved')}>
                                 <UserCheck size={18} />
-                                Approve Instructor
+                                Approve
                             </button>
                         </div>
                     </div>

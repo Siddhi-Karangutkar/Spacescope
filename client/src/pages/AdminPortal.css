@@ -1,0 +1,204 @@
+.admin-portal-wrapper {
+    height: 100vh;
+    overflow: hidden;
+    background: #000;
+}
+
+.admin-portal-container {
+    display: flex;
+    height: calc(100vh - 80px);
+    /* Adjust based on Navbar height */
+    margin-top: 80px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Sidebar Styling */
+.admin-sidebar {
+    width: 260px;
+    height: 100%;
+    background: rgba(10, 15, 25, 0.8) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    transition: width 0.3s ease;
+    flex-shrink: 0;
+}
+
+.sidebar-closed .admin-sidebar {
+    width: 80px;
+}
+
+.sidebar-header {
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.admin-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: monospace;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    letter-spacing: 0.1em;
+}
+
+.sidebar-closed .admin-badge span {
+    display: none;
+}
+
+.collapse-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    color: var(--text-secondary);
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.sidebar-closed .collapse-btn {
+    transform: rotate(180deg);
+}
+
+/* Nav Items */
+.sidebar-nav {
+    flex: 1;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.85rem 1rem;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+}
+
+.nav-item.active {
+    background: rgba(34, 166, 179, 0.1);
+    border-color: rgba(34, 166, 179, 0.3);
+    color: var(--accent-primary);
+}
+
+.sidebar-closed .nav-label {
+    display: none;
+}
+
+.active-glow {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 20px;
+    background: var(--accent-primary);
+    box-shadow: 0 0 10px var(--accent-primary);
+    border-radius: 0 4px 4px 0;
+}
+
+/* Footer */
+.sidebar-footer {
+    padding: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: #ef4444;
+    text-decoration: none;
+    font-size: 0.9rem;
+    padding: 0.5rem;
+    transition: opacity 0.2s;
+}
+
+.logout-btn:hover {
+    opacity: 0.8;
+}
+
+.sidebar-closed .logout-btn span {
+    display: none;
+}
+
+/* Main Content Area */
+.admin-main-content {
+    flex: 1;
+    overflow-y: auto;
+    background: radial-gradient(circle at top right, rgba(34, 166, 179, 0.05), transparent);
+    padding: 2rem;
+}
+
+.view-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Verification Detail View */
+.back-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 2rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    width: fit-content;
+}
+
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.verification-detail {
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* Smooth transitions for verified/view pages */
+.view-container>div {
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
