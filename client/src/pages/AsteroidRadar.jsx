@@ -15,107 +15,65 @@ const AsteroidRadar = () => {
     const API_BASE = 'http://localhost:5000/api';
 
     useEffect(() => {
-        // DUMMY DATA INJECTION AS REQUESTED
-        const DUMMY_ASTEROIDS = [
-            {
-                id: "2099942",
-                name: "(99942) Apophis",
-                is_potentially_hazardous_asteroid: true,
-                estimated_diameter: { kilometers: { estimated_diameter_min: 0.34, estimated_diameter_max: 0.37 } },
-                close_approach_data: [{
-                    miss_distance: { kilometers: "31000" },
-                    relative_velocity: { kilometers_per_hour: "26000" },
-                    close_approach_date_full: "2029-Apr-13 21:46",
-                    orbiting_body: "Earth"
-                }],
-                absolute_magnitude_h: 19.7,
-                nasa_jpl_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=99942"
-            },
-            {
-                id: "2101955",
-                name: "(101955) Bennu",
-                is_potentially_hazardous_asteroid: true,
-                estimated_diameter: { kilometers: { estimated_diameter_min: 0.48, estimated_diameter_max: 0.51 } },
-                close_approach_data: [{
-                    miss_distance: { kilometers: "125000" },
-                    relative_velocity: { kilometers_per_hour: "101000" },
-                    close_approach_date_full: "2182-Sep-24 10:00",
-                    orbiting_body: "Earth"
-                }],
-                absolute_magnitude_h: 20.1,
-                nasa_jpl_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=101955"
-            },
-            {
-                id: "54235942",
-                name: "2023 DW",
-                is_potentially_hazardous_asteroid: true,
-                estimated_diameter: { kilometers: { estimated_diameter_min: 0.04, estimated_diameter_max: 0.05 } },
-                close_approach_data: [{
-                    miss_distance: { kilometers: "4500000" },
-                    relative_velocity: { kilometers_per_hour: "89000" },
-                    close_approach_date_full: "2046-Feb-14 14:15",
-                    orbiting_body: "Earth"
-                }],
-                absolute_magnitude_h: 24.5,
-                nasa_jpl_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=2023%20DW"
-            },
-            {
-                id: "3542510",
-                name: "(2004 MN4)",
-                is_potentially_hazardous_asteroid: false,
-                estimated_diameter: { kilometers: { estimated_diameter_min: 0.2, estimated_diameter_max: 0.25 } },
-                close_approach_data: [{
-                    miss_distance: { kilometers: "15000000" },
-                    relative_velocity: { kilometers_per_hour: "45000" },
-                    close_approach_date_full: "2036-Apr-13 06:20",
-                    orbiting_body: "Earth"
-                }],
-                absolute_magnitude_h: 22.1,
-                nasa_jpl_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=2004%20MN4"
-            },
-            {
-                id: "2441987",
-                name: "(441987) 2010 NY65",
-                is_potentially_hazardous_asteroid: true,
-                estimated_diameter: { kilometers: { estimated_diameter_min: 0.18, estimated_diameter_max: 0.3 } },
-                close_approach_data: [{
-                    miss_distance: { kilometers: "2800000" },
-                    relative_velocity: { kilometers_per_hour: "48000" },
-                    close_approach_date_full: "2025-Jun-24 16:00",
-                    orbiting_body: "Earth"
-                }],
-                absolute_magnitude_h: 21.2,
-                nasa_jpl_url: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=2010%20NY65"
-            }
-        ];
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const res = await fetch(`${API_BASE}/asteroids`);
+                if (!res.ok) throw new Error("NASA API unavailable");
+                const data = await res.json();
 
-        // Simulate network delay for effect
-        setTimeout(() => {
-            setAsteroids(DUMMY_ASTEROIDS);
-            setStats({
-                total: DUMMY_ASTEROIDS.length,
-                hazardous: DUMMY_ASTEROIDS.filter(a => a.is_potentially_hazardous_asteroid).length,
-                closest: DUMMY_ASTEROIDS[0], // Apophis
-                largest: DUMMY_ASTEROIDS[1]  // Bennu
-            });
-            handleAsteroidClick(DUMMY_ASTEROIDS[0]);
-            setLoading(false);
-        }, 800);
+                // Flatten NASA's dated dictionary into a single array
+                const neoData = data.near_earth_objects || {};
+                const flatList = Object.values(neoData).flat();
+
+                // Sorting by miss distance
+                const sorted = flatList.sort((a, b) =>
+                    parseFloat(a.close_approach_data[0].miss_distance.kilometers) -
+                    parseFloat(b.close_approach_data[0].miss_distance.kilometers)
+                );
+
+                setAsteroids(sorted);
+
+                if (sorted.length > 0) {
+                    setStats({
+                        total: sorted.length,
+                        hazardous: sorted.filter(a => a.is_potentially_hazardous_asteroid).length,
+                        closest: sorted[0],
+                        largest: [...sorted].sort((a, b) =>
+                            b.estimated_diameter.kilometers.estimated_diameter_max -
+                            a.estimated_diameter.kilometers.estimated_diameter_max
+                        )[0]
+                    });
+
+                    // Auto-select the closest asteroid
+                    handleAsteroidClick(sorted[0]);
+                }
+            } catch (err) {
+                console.warn("Asteroid Radar fetch failed, check server connection.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+        const interval = setInterval(fetchData, 300000); // Refresh every 5 mins
+        return () => clearInterval(interval);
     }, []);
 
-    const handleAsteroidClick = (ast) => {
+    const handleAsteroidClick = async (ast) => {
         setSelectedAsteroid(ast);
         setLoadingDetails(true);
-        // Mocking detailed data fetch with a timeout
-        setTimeout(() => {
-            setDetailedData({
-                orbital_data: {
-                    orbit_id: Math.floor(Math.random() * 100),
-                    orbit_class: { orbit_class_type: "Apollo" }
-                }
-            });
+        try {
+            const res = await fetch(`${API_BASE}/asteroid/${ast.id}`);
+            if (res.ok) {
+                const data = await res.json();
+                setDetailedData(data);
+            }
+        } catch (e) {
+            console.warn("Failed to fetch asteroid details");
+        } finally {
             setLoadingDetails(false);
-        }, 400);
+        }
     };
 
     // Radar Visualization Logic
@@ -137,7 +95,14 @@ const AsteroidRadar = () => {
 
     return (
         <div className="asteroid-radar-container">
-            <h1 className="page-title glow-text"><SmartTerm term="NEO" display="Near-Earth Object" /> Radar</h1>
+            <header className="radar-page-header">
+                <h1 className="page-title glow-text">
+                    <span className="text-gradient">Asteroid</span> Radar
+                </h1>
+                <div className="subtitle text-center text-secondary mb-8 -mt-6">
+                    <SmartTerm term="NEO" display="Near-Earth Object" /> Surveillance Network
+                </div>
+            </header>
 
             <div className="radar-grid">
 

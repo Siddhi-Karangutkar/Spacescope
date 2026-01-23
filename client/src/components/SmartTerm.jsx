@@ -22,7 +22,7 @@ const SmartTerm = ({ term, display, customDef }) => {
         <span className="smart-term">
             {text}
             <span className="smart-tooltip">
-                <h4>{term}</h4>
+                <strong className="block mb-1">{term}</strong>
                 {definition}
             </span>
         </span>

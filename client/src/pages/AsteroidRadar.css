@@ -1,13 +1,22 @@
 .asteroid-radar-container {
-    padding: 100px 2rem 2rem;
+    padding: 120px 2rem 4rem;
     min-height: 100vh;
+    background: radial-gradient(circle at 50% 100%, #0d1117 0%, #000 100%);
+}
+
+.page-title {
+    text-align: center;
+    font-size: 3rem;
+    margin-bottom: 3rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
 }
 
 .radar-grid {
     display: grid;
     grid-template-columns: 2fr 1fr;
     grid-template-rows: auto auto;
-    gap: 1.5rem;
+    gap: 2rem;
     max-width: 1400px;
     margin: 0 auto;
 }
@@ -15,22 +24,24 @@
 /* Visualization Panel */
 .radar-visual-panel {
     grid-row: span 2;
-    min-height: 500px;
+    min-height: 600px;
     display: flex;
     flex-direction: column;
+    padding: 2rem;
 }
 
 .radar-display {
     flex: 1;
     position: relative;
-    background: radial-gradient(circle at center, #0a0a0a 0%, #000 100%);
-    border-radius: 12px;
+    background: radial-gradient(circle at center, rgba(10, 10, 10, 0.8) 0%, #000 100%);
+    border-radius: 20px;
     overflow: hidden;
-    margin: 1rem 0;
+    margin: 1.5rem 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.5);
 }
 
 .earth-center {
@@ -153,6 +164,10 @@
 
 
 /* Detail Panel */
+.asteroid-detail-panel {
+    padding: 2rem;
+}
+
 .detail-content {
     display: flex;
     flex-direction: column;
@@ -160,17 +175,20 @@
 }
 
 .asteroid-name {
-    font-size: 1.8rem;
+    font-size: 2.5rem;
     font-family: var(--font-display);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    letter-spacing: -0.02em;
 }
 
 .badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 999px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
+    padding: 0.4rem 1rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
 }
 
 .detail-grid {
@@ -209,11 +227,25 @@
 }
 
 /* Summary Panel */
+.summary-panel {
+    padding: 1.5rem;
+}
+
+.summary-panel h3 {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 0.5rem;
+}
+
 .stat-row {
     display: flex;
     justify-content: space-between;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .stat-row:last-child {
@@ -222,17 +254,29 @@
 
 .stat-val {
     font-weight: 700;
-    font-family: monospace;
+    font-family: var(--font-display);
+    color: var(--accent-primary);
 }
 
 .text-sm {
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 /* List Panel */
 .list-panel {
     max-height: 400px;
     overflow-y: auto;
+    padding: 1.5rem;
+}
+
+.list-panel h3 {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 0.5rem;
 }
 
 .asteroid-list {

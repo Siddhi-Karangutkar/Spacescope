@@ -26,12 +26,24 @@ const SpaceRisk = () => {
 
             const { latitude, longitude, name, country } = geoData.results[0];
 
-            // 2. Weather Data (Wind, Rain)
             const weatherRes = await fetch(
                 `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=precipitation,wind_speed_10m,cloud_cover&hourly=uv_index&forecast_days=1`
             );
             const weatherData = await weatherRes.json();
             const current = weatherData.current;
+
+            // 3. Real-Time Space Weather (Kp-Index & Proton Flux)
+            const API_BASE = 'http://localhost:5000/api';
+            const [kRes, protonRes] = await Promise.all([
+                fetch(`${API_BASE}/k-index`),
+                fetch(`${API_BASE}/proton-flux`)
+            ]);
+
+            const kData = await kRes.json();
+            const protonData = await protonRes.json();
+
+            const latestK = kData && kData.length > 0 ? kData[kData.length - 1].kp_index : 0;
+            const latestProton = protonData && protonData.length > 0 ? protonData[protonData.length - 1].flux : 0;
 
             // 3. Risk Calculation Logic
             // Cyclone Risk: Based on Wind Speed (km/h)
@@ -44,17 +56,17 @@ const SpaceRisk = () => {
             let floodRisk = Math.min(current.precipitation * 3, 10).toFixed(1);
             let floodLabel = current.precipitation > 5 ? "Flash Flood Warning" : current.precipitation > 1 ? "Heavy Rainfall" : "Dry Baseline";
 
-            // Solar Risk (Simulated real-time variance + Latitude factor)
-            // Higher latitude = more exposure to geomagnetic storms
+            // Solar Risk (Real-time Kp-Index + Latitude factor)
+            // Kp-index 0-9 translates well to risk score
             const latFactor = Math.abs(latitude) / 90;
-            const baseSolar = 3 + (Math.random() * 4); // Random fluctuation 3-7
-            let solarRisk = (baseSolar + (latFactor * 2)).toFixed(1);
-            let solarLabel = solarRisk > 7 ? "Geomagnetic Storm Inbound" : "Normal Solar Wind";
+            let solarRisk = (parseFloat(latestK) + (latFactor * 2)).toFixed(1);
+            let solarLabel = solarRisk > 7 ? "Geomagnetic Storm Inbound" : solarRisk > 4 ? "Unsettled Space Weather" : "Normal Solar Wind";
 
-            // Satellite Dependency Score
-            // Mocked based on "Technology Density" (Randomized for demo, but consistent for city)
-            const techScore = (name.length + 5) % 10; // Deterministic randomish
-            let satRisk = (4 + (techScore / 2)).toFixed(1);
+            // Satellite Dependency Score (Real-time Proton Flux + Tech factor)
+            const techScore = (name.length + 5) % 10;
+            const protonModifier = Math.log10(Math.max(latestProton, 1)) * 2;
+            let satRisk = (3 + (techScore / 2) + protonModifier).toFixed(1);
+            satRisk = Math.min(satRisk, 10);
 
             // Total Score
             const totalScore = ((parseFloat(cycloneRisk) + parseFloat(floodRisk) + parseFloat(solarRisk) + parseFloat(satRisk)) / 4).toFixed(1);
@@ -65,8 +77,8 @@ const SpaceRisk = () => {
                 breakdown: {
                     cyclone: { score: cycloneRisk, label: cycloneLabel, val: `${current.wind_speed_10m} km/h Wind` },
                     flood: { score: floodRisk, label: floodLabel, val: `${current.precipitation} mm Rain` },
-                    solar: { score: solarRisk, label: solarLabel, val: `Kp-Index Projected` },
-                    satellite: { score: satRisk, label: "Critical Infrastructure", val: "High Dependency" }
+                    solar: { score: solarRisk, label: solarLabel, val: `Kp-Index: ${latestK}` },
+                    satellite: { score: satRisk, label: "Network Vulnerability", val: `Proton Flux: ${parseFloat(latestProton).toExponential(1)}` }
                 }
             });
 

@@ -52,11 +52,14 @@
     transform: translateX(-50%) translateY(-10px);
 }
 
-.smart-tooltip h4 {
+.smart-tooltip strong {
+    display: block;
     margin: 0 0 0.5rem 0;
     color: var(--accent-secondary, #00e5ff);
     font-size: 1rem;
     font-family: var(--font-display, sans-serif);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     padding-bottom: 0.3rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }

@@ -34,60 +34,67 @@ const CosmicWeather = () => {
     };
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchIndividual = async (url, setter, key) => {
             try {
-                const [windRes, magRes, kRes, protonRes, flaresRes] = await Promise.all([
-                    fetch(`${API_BASE}/solar-wind`),
-                    fetch(`${API_BASE}/magnetic-field`),
-                    fetch(`${API_BASE}/k-index`),
-                    fetch(`${API_BASE}/proton-flux`),
-                    fetch(`${API_BASE}/solar-flares`)
-                ]);
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(`Stream ${key} offline`);
+                const data = await res.json();
 
-                const windData = await windRes.json();
-                const magData = await magRes.json();
-                const kData = await kRes.json();
-                const protonData = await protonRes.json();
-                const flaresData = await flaresRes.json();
+                // Helper: Get latest valid data point
+                const getLatestValid = (arr, k) => {
+                    if (!arr || !Array.isArray(arr)) return null;
+                    for (let i = arr.length - 1; i >= 0; i--) {
+                        if (arr[i] && arr[i][k] !== undefined && arr[i][k] !== null) {
+                            if (k === 'speed' && parseFloat(arr[i][k]) <= 0) continue;
+                            return arr[i];
+                        }
+                    }
+                    return null;
+                };
 
-                // Get latest valid data point
-                const latestWind = windData[windData.length - 1];
-                const latestMag = magData[magData.length - 1];
-                const latestK = kData[kData.length - 1];
-
-                setSolarWind(latestWind);
-                setMagField(latestMag);
-                setKIndex(latestK);
-                setProtonFlux(protonData[protonData.length - 1]);
-                setFlares(flaresData.slice(0, 5)); // Latest 5 flares
-
-                setWeatherStatus(calculateStatus(latestWind, latestK, latestMag));
-                setLoading(false);
-            } catch (error) {
-                console.warn("API Failed, loading dummy data for Cosmic Weather:", error);
-                // DUMMY FALLBACK DATA
-                setSolarWind({ speed: 550, density: 4.5 }); // Moderate/High speed
-                setMagField({ bz_gsm: -6.2, bt: 12.1 });    // Negative Bz (Storm condition)
-                setKIndex({ kp_index: 6 });                 // Moderate/Strong Storm
-                setProtonFlux({ flux: 15.2 });              // Elevated flux
-                setFlares([
-                    { classType: "M2.4", beginTime: new Date().toISOString() },
-                    { classType: "C4.1", beginTime: new Date(Date.now() - 86400000).toISOString() },
-                    { classType: "X1.1", beginTime: new Date(Date.now() - 172800000).toISOString() }
-                ]);
-
-                // Calculate status for dummy data
-                setWeatherStatus({
-                    status: 'MODERATE',
-                    color: 'text-yellow-400',
-                    message: '-- SIMULATED DATA -- Unsettled space weather conditions.'
-                });
-                setLoading(false);
+                const latest = getLatestValid(data, key);
+                if (latest) setter(latest);
+                return latest;
+            } catch (err) {
+                console.warn(`Failed to fetch ${key}:`, err.message);
+                return null;
             }
         };
 
+        const fetchData = async () => {
+            const wind = await fetchIndividual(`${API_BASE}/solar-wind`, setSolarWind, 'speed');
+            const mag = await fetchIndividual(`${API_BASE}/magnetic-field`, setMagField, 'bz_gsm');
+            const k = await fetchIndividual(`${API_BASE}/k-index`, setKIndex, 'kp_index');
+            const proton = await fetchIndividual(`${API_BASE}/proton-flux`, setProtonFlux, 'flux');
+
+            // Solar Flares
+            try {
+                const res = await fetch(`${API_BASE}/solar-flares`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setFlares(Array.isArray(data) ? data.slice(0, 5) : []);
+                }
+            } catch (e) { console.warn("Flares failed"); }
+
+            // If we have at least K-index or Wind, we're not entirely simulated
+            if (wind || k || mag) {
+                setWeatherStatus(calculateStatus(wind, k, mag));
+            } else {
+                // TOTAL FALLBACK ONLY IF EVERYTHING FAILS
+                setSolarWind({ speed: 550, density: 4.5 });
+                setMagField({ bz_gsm: -6.2, bt: 12.1 });
+                setKIndex({ kp_index: 6 });
+                setWeatherStatus({
+                    status: 'MODERATE',
+                    color: 'text-yellow-400',
+                    message: '-- SIMULATED DATA -- System streams currently offline.'
+                });
+            }
+            setLoading(false);
+        };
+
         fetchData();
-        const interval = setInterval(fetchData, 60000); // Update every minute
+        const interval = setInterval(fetchData, 60000);
         return () => clearInterval(interval);
     }, []);
 
@@ -328,7 +335,7 @@ const Live3DEarth = ({ kIndex, solarWindSpeed, bzGsm }) => {
                         style={{
                             borderColor: shield.color,
                             boxShadow: `0 0 40px ${shield.color}, inset 0 0 40px ${shield.color}`,
-                            transform: `scale(${shield.compression}) translateX(${shield.compression < 0.9 ? '10px' : '0'})`
+                            transform: `translate(-50%, -50%) scale(${shield.compression})`
                         }}
                     >
                         <div className="shield-ripple"></div>
@@ -388,8 +395,8 @@ const Live3DEarth = ({ kIndex, solarWindSpeed, bzGsm }) => {
                     </div>
                     <div className="stat-row">
                         <span className="stat-label">Bz Component:</span>
-                        <span className={`stat-value ${bzGsm < -5 ? 'text-red-400' : 'text-green-400'}`}>
-                            {bzGsm.toFixed(1)} nT
+                        <span className={`stat-value ${typeof bzGsm === 'number' && bzGsm < -5 ? 'text-red-400' : 'text-green-400'}`}>
+                            {typeof bzGsm === 'number' ? bzGsm.toFixed(1) : bzGsm} nT
                         </span>
                     </div>
                     <div className="stat-row">
