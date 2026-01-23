@@ -27,12 +27,20 @@
     margin-bottom: 2rem;
 }
 
+.header-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+}
+
 .search-bar {
     display: flex;
     justify-content: center;
     gap: 0.5rem;
     max-width: 500px;
-    margin: 0 auto 3rem auto;
 }
 
 .search-bar input {
@@ -267,4 +275,378 @@
 .story-card p {
     color: var(--text-secondary);
     line-height: 1.6;
+}
+
+/* SAVE EARTH MODE STYLES */
+.game-toggle-btn {
+    background: linear-gradient(135deg, #00b8d4, #00e5ff);
+    color: #000;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 99px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+    transition: all 0.3s;
+}
+
+.game-toggle-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 0 30px rgba(0, 229, 255, 0.6);
+}
+
+/* GAME OVERLAY STYLES */
+.game-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(10px);
+}
+
+.game-container {
+    width: 95%;
+    max-width: 900px;
+    height: 90vh;
+    background: #0a0a0a;
+    border: 2px solid #333;
+    border-radius: 20px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 2rem;
+    overflow: hidden;
+}
+
+.close-game {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.close-game:hover {
+    color: #fff;
+}
+
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.game-header h2 {
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 2px;
+    color: #00e5ff;
+}
+
+.health-bar-container {
+    flex: 1;
+    max-width: 300px;
+}
+
+.health-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.3rem;
+    color: #aaa;
+}
+
+.health-bar {
+    width: 100%;
+    height: 12px;
+    background: #222;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid #444;
+}
+
+.health-fill {
+    height: 100%;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.score-display {
+    font-family: 'JetBrains Mono', monospace;
+    color: #ff9800;
+    font-weight: 700;
+}
+
+.game-world {
+    flex: 1;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle at center, #111 0%, #000 70%);
+    border-radius: 12px;
+    border: 1px solid #1a1a1a;
+    margin-bottom: 2rem;
+}
+
+.earth-vessel {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    z-index: 5;
+}
+
+.earth-sphere {
+    width: 100%;
+    height: 100%;
+    background: url('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg');
+    background-size: cover;
+    border-radius: 50%;
+    box-shadow: inset -20px -20px 50px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 100, 255, 0.3);
+    animation: rotate-earth 20s linear infinite;
+}
+
+@keyframes rotate-earth {
+    from {
+        background-position: 0 0;
+    }
+
+    to {
+        background-position: -400px 0;
+    }
+}
+
+.shield-effect {
+    position: absolute;
+    top: -30px;
+    left: -30px;
+    right: -30px;
+    bottom: -30px;
+    border: 3px solid #00f2ff;
+    border-radius: 50%;
+    box-shadow: 0 0 40px #00f2ff, inset 0 0 40px #00f2ff;
+    animation: pulse-shield 0.5s infinite alternate;
+}
+
+@keyframes pulse-shield {
+    from {
+        transform: scale(0.98);
+        opacity: 0.6;
+    }
+
+    to {
+        transform: scale(1.02);
+        opacity: 1;
+    }
+}
+
+.damage-flash {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 0, 0, 0.4);
+    border-radius: 50%;
+    animation: flash 0.1s infinite;
+}
+
+@keyframes flash {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.solar-storm {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.storm-particle {
+    position: absolute;
+    right: 0;
+    width: 40px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #ff4400);
+    animation: fly-left 0.8s linear infinite;
+}
+
+@keyframes fly-left {
+    from {
+        transform: translateX(100%);
+    }
+
+    to {
+        transform: translateX(-600%);
+    }
+}
+
+.storm-warning {
+    position: absolute;
+    top: 2rem;
+    color: #ff4400;
+    font-size: 1.5rem;
+    font-weight: 800;
+    animation: blink 0.5s infinite;
+}
+
+@keyframes blink {
+    50% {
+        opacity: 0;
+    }
+}
+
+.storm-impact {
+    position: absolute;
+    bottom: 2rem;
+    color: #ff0000;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.game-controls {
+    text-align: center;
+}
+
+.control-hint {
+    font-size: 0.75rem;
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+.shield-btn {
+    background: #111;
+    color: #fff;
+    border: 2px solid #00f2ff;
+    padding: 1.2rem 3rem;
+    border-radius: 12px;
+    font-size: 1.2rem;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 0 auto;
+    transition: all 0.2s;
+}
+
+.shield-btn:active,
+.shield-btn.active {
+    background: #00f2ff;
+    color: #000;
+    box-shadow: 0 0 40px #00f2ff;
+    transform: scale(0.95);
+}
+
+.fact-popup {
+    position: absolute;
+    bottom: 2rem;
+    left: 2rem;
+    right: 2rem;
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid #00f2ff;
+    padding: 1.5rem;
+    animation: slide-up 0.5s ease-out;
+}
+
+@keyframes slide-up {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.fact-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    color: #00f2ff;
+    margin-bottom: 0.5rem;
+}
+
+.fact-popup p {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.fact-popup button {
+    background: #00f2ff;
+    color: #000;
+    border: none;
+    padding: 0.5rem 1.5rem;
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.game-over-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+}
+
+.game-over-overlay h1 {
+    font-size: 2.5rem;
+    color: #ff4444;
+    margin-bottom: 1rem;
+}
+
+.final-stats {
+    font-size: 1.5rem;
+    margin: 2rem 0;
+    color: #ff9800;
+}
+
+.restart-btn {
+    background: #ff4444;
+    color: #fff;
+    border: none;
+    padding: 1rem 3rem;
+    font-size: 1.2rem;
+    font-weight: 800;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.restart-btn:hover {
+    transform: scale(1.1);
 }

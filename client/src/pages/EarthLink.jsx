@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Wind, Sun, Droplets, AlertTriangle, MapPin, Globe, Shield, CloudRain, Search, Navigation } from 'lucide-react';
+import { Wind, Sun, Droplets, AlertTriangle, MapPin, Globe, Shield, CloudRain, Search, Navigation, Zap, Heart, Info, X } from 'lucide-react';
 import SmartTerm from '../components/SmartTerm';
 import './EarthLink.css';
 
@@ -9,6 +9,7 @@ const EarthLink = () => {
     const [envData, setEnvData] = useState(null);
     const [alerts, setAlerts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [gameMode, setGameMode] = useState(false);
 
     const API_BASE = 'http://localhost:5000/api';
 
@@ -139,15 +140,20 @@ const EarthLink = () => {
                 <h1 className="hero-title"><span className="text-gradient">EarthLink</span> Impact Engine</h1>
                 <p className="hero-subtitle"><SmartTerm term="Satellite" display="Satellite Intelligence" /> for <span className="text-white font-bold">{location.city}</span></p>
 
-                <form onSubmit={handleSearch} className="search-bar">
-                    <input
-                        type="text"
-                        placeholder="Enter city (e.g. Mumbai, New York)..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                    <button type="submit"><Search size={20} /></button>
-                </form>
+                <div className="header-actions">
+                    <button className="game-toggle-btn" onClick={() => setGameMode(true)}>
+                        <Shield className="mr-2" size={18} /> SAVE EARTH MODE
+                    </button>
+                    <form onSubmit={handleSearch} className="search-bar">
+                        <input
+                            type="text"
+                            placeholder="Enter city (e.g. Mumbai, New York)..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        <button type="submit"><Search size={20} /></button>
+                    </form>
+                </div>
             </header>
 
             {/* LIVE SATELLITE FEED */}
@@ -262,6 +268,145 @@ const EarthLink = () => {
                     </div>
                 </div>
             </section>
+            {/* SAVE EARTH GAME OVERLAY */}
+            {gameMode && (
+                <SaveEarthGame onClose={() => setGameMode(false)} />
+            )}
+        </div>
+    );
+};
+
+const SaveEarthGame = ({ onClose }) => {
+    const [health, setHealth] = useState(100);
+    const [shieldActive, setShieldActive] = useState(false);
+    const [stormStatus, setStormStatus] = useState('NORMAL'); // NORMAL, WARNING, IMPACT
+    const [score, setScore] = useState(0);
+    const [physicsFact, setPhysicsFact] = useState(null);
+    const [gameOver, setGameOver] = useState(false);
+
+    const facts = [
+        { title: "Magnetosphere", content: "Earth's magnetic field acts as a shield, deflecting solar wind particles that would otherwise strip away our atmosphere." },
+        { title: "Solar Wind", content: "The Sun continuously emits a stream of charged particles called the solar wind, traveling at millions of kilometers per hour." },
+        { title: "CME (Coronal Mass Ejection)", content: "A massive burst of solar wind and magnetic fields, a CME can overwhelm Earth's shield, causing geomagnetic storms." },
+        { title: "Aurora", content: "When solar particles bypass the shield near the poles, they excite atmospheric gases, creating beautiful shimmering lights." },
+        { title: "Van Allen Belts", content: "Regions of trapped radiation around Earth that help filter high-energy particles before they reach the surface." }
+    ];
+
+    useEffect(() => {
+        if (gameOver) return;
+
+        const interval = setInterval(() => {
+            // Randomly trigger a storm warning
+            if (stormStatus === 'NORMAL' && Math.random() < 0.2) {
+                setStormStatus('WARNING');
+                setTimeout(() => {
+                    setStormStatus('IMPACT');
+                    // Storm lasts 2 seconds
+                    setTimeout(() => {
+                        setStormStatus('NORMAL');
+                        setScore(s => s + 10);
+                        if (Math.random() < 0.3) {
+                            setPhysicsFact(facts[Math.floor(Math.random() * facts.length)]);
+                        }
+                    }, 2000);
+                }, 1500);
+            }
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, [stormStatus, gameOver]);
+
+    useEffect(() => {
+        if (stormStatus === 'IMPACT' && !shieldActive) {
+            const damage = setInterval(() => {
+                setHealth(h => {
+                    if (h <= 1) {
+                        setGameOver(true);
+                        return 0;
+                    }
+                    return h - 1;
+                });
+            }, 100);
+            return () => clearInterval(damage);
+        }
+    }, [stormStatus, shieldActive]);
+
+    return (
+        <div className="game-overlay">
+            <div className="game-container">
+                <button className="close-game" onClick={onClose}><X /></button>
+
+                <div className="game-header">
+                    <h2>DEFEND PLANET EARTH</h2>
+                    <div className="health-bar-container">
+                        <div className="health-label"><Heart size={16} fill="red" /> BIOSPHERE HEALTH</div>
+                        <div className="health-bar">
+                            <div
+                                className="health-fill"
+                                style={{ width: `${health}%`, background: health < 30 ? '#ff4444' : '#00ff88' }}
+                            ></div>
+                        </div>
+                    </div>
+                    <div className="score-display">SURVIVAL RANK: {Math.floor(score / 10)}</div>
+                </div>
+
+                <div className="game-world">
+                    {/* The Earth */}
+                    <div className={`earth-vessel ${shieldActive ? 'shielded' : ''}`}>
+                        <div className="earth-sphere"></div>
+                        {shieldActive && <div className="shield-effect"></div>}
+                        {stormStatus === 'IMPACT' && !shieldActive && <div className="damage-flash"></div>}
+                    </div>
+
+                    {/* Solar Storm Visuals */}
+                    {stormStatus !== 'NORMAL' && (
+                        <div className={`solar-storm ${stormStatus.toLowerCase()}`}>
+                            {[...Array(20)].map((_, i) => (
+                                <div key={i} className="storm-particle" style={{ top: `${Math.random() * 100}%`, animationDelay: `${Math.random() * 2}s` }}></div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Alarms */}
+                    {stormStatus === 'WARNING' && <div className="storm-warning">! GEOMAGNETIC STORM DETECTED !</div>}
+                    {stormStatus === 'IMPACT' && <div className="storm-impact">IMPACT IN PROGRESS</div>}
+                </div>
+
+                <div className="game-controls">
+                    <p className="control-hint">HOLD BUTTON OR SPACEBAR TO DEPLOY MAGNETIC SHIELD</p>
+                    <button
+                        className={`shield-btn ${shieldActive ? 'active' : ''}`}
+                        onMouseDown={() => setShieldActive(true)}
+                        onMouseUp={() => setShieldActive(false)}
+                        onTouchStart={() => setShieldActive(true)}
+                        onTouchEnd={() => setShieldActive(false)}
+                    >
+                        <Zap size={24} /> {shieldActive ? 'SHIELD ACTIVE' : 'DEPLOY SHIELD'}
+                    </button>
+                </div>
+
+                {/* Physics Fact Popup */}
+                {physicsFact && (
+                    <div className="fact-popup glass-panel">
+                        <div className="fact-header">
+                            <Info size={18} />
+                            <h3>{physicsFact.title}</h3>
+                        </div>
+                        <p>{physicsFact.content}</p>
+                        <button onClick={() => setPhysicsFact(null)}>UNDERSTOOD</button>
+                    </div>
+                )}
+
+                {/* Game Over */}
+                {gameOver && (
+                    <div className="game-over-overlay glass-panel">
+                        <h1>EARTH RENDERED UNINHABITABLE</h1>
+                        <p>Survivability reached zero. The magnetic shield was breached.</p>
+                        <div className="final-stats">Survival Points: {score}</div>
+                        <button onClick={() => { setHealth(100); setGameOver(false); setScore(0); }} className="restart-btn">REBOOT BIOSPHERE</button>
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
