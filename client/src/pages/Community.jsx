@@ -13,6 +13,7 @@ const Community = () => {
         email: '',
         specialization: '',
         bio: '',
+        image: null,
         resume: null,
         certificate: null,
         idCard: null
@@ -379,6 +380,16 @@ const Community = () => {
                                 <div className="form-group">
                                     <label>Short Bio</label>
                                     <textarea rows="3" placeholder="Tell us about your research or teaching experience..." onChange={e => setInstructorForm({ ...instructorForm, bio: e.target.value })} />
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Profile Picture</label>
+                                    <div className="profile-upload-row">
+                                        <div className="upload-field">
+                                            <input type="file" accept="image/*" onChange={e => handleInstructorFileChange(e, 'image')} />
+                                        </div>
+                                        {instructorForm.image && <img src={instructorForm.image} alt="Preview" className="profile-preview-sm" />}
+                                    </div>
                                 </div>
 
                                 <div className="upload-grid">

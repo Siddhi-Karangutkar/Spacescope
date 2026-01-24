@@ -267,6 +267,86 @@ const InstructorPortal = () => {
                         </div>
                     </div>
                 )}
+
+                {view === 'PROFILE' && (
+                    <div className="profile-content fade-in">
+                        <header className="portal-header">
+                            <h1>Configuration</h1>
+                            <p>Manage your instructor profile and system preferences.</p>
+                        </header>
+
+                        <div className="config-grid">
+                            <div className="config-card glass-panel">
+                                <h2><Users size={20} /> Public Profile</h2>
+                                <div className="config-item">
+                                    <label>Display Name</label>
+                                    <input type="text" value={instructor.name} readOnly className="dummy-input" />
+                                </div>
+                                <div className="config-item">
+                                    <label>Specialization Tag</label>
+                                    <input type="text" value={instructor.specialization} readOnly className="dummy-input" />
+                                </div>
+                                <div className="config-item">
+                                    <label>Bio Visibility</label>
+                                    <select className="dummy-input">
+                                        <option>Public (Visible to everyone)</option>
+                                        <option>Students Only</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="config-card glass-panel">
+                                <h2><Clock size={20} /> Availability & Schedule</h2>
+                                <div className="config-item">
+                                    <label>Time Zone</label>
+                                    <select className="dummy-input">
+                                        <option>UTC (Coordinated Universal Time)</option>
+                                        <option>EST (Eastern Standard Time)</option>
+                                        <option>PST (Pacific Standard Time)</option>
+                                    </select>
+                                </div>
+                                <div className="config-item">
+                                    <label>Default Session Duration</label>
+                                    <select className="dummy-input">
+                                        <option>30 Minutes</option>
+                                        <option selected>60 Minutes</option>
+                                        <option>90 Minutes</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="config-card glass-panel">
+                                <h2><MessageCircle size={20} /> Notifications</h2>
+                                <div className="toggle-item">
+                                    <span>Email Alerts for New Students</span>
+                                    <input type="checkbox" checked readOnly />
+                                </div>
+                                <div className="toggle-item">
+                                    <span>Session Reminders (15 min prior)</span>
+                                    <input type="checkbox" checked readOnly />
+                                </div>
+                                <div className="toggle-item">
+                                    <span>Daily Summary Report</span>
+                                    <input type="checkbox" />
+                                </div>
+                            </div>
+
+                            <div className="config-card glass-panel">
+                                <h2><Settings size={20} /> System</h2>
+                                <div className="config-item">
+                                    <label>Interface Theme</label>
+                                    <select className="dummy-input">
+                                        <option>Cosmic Dark (Default)</option>
+                                        <option>Starfield Contrast</option>
+                                    </select>
+                                </div>
+                                <div className="config-item">
+                                    <button className="danger-btn box-btn">Request Account Deletion</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </main>
 
             {/* CREATE SESSION MODAL */}
