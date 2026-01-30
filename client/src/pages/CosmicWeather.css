@@ -17,6 +17,32 @@
     margin: 0 auto;
 }
 
+.weather-charts-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin: 2rem 0;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.weather-chart-panel {
+    padding: 1.5rem;
+    min-height: 350px;
+}
+
+.weather-chart-panel h3 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.weather-chart-panel.wide-chart {
+    grid-column: 1 / -1;
+}
+
 .weather-card {
     padding: 1.5rem;
     display: flex;

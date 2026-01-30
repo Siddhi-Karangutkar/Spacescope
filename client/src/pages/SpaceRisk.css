@@ -12,6 +12,37 @@
     font-family: 'Inter', sans-serif;
 }
 
+.global-risk-analytics {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.analytics-title {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    color: var(--text-primary);
+}
+
+.risk-charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.risk-chart-panel {
+    padding: 1.5rem;
+    min-height: 350px;
+}
+
+.risk-chart-panel h3 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
 /* --- Header --- */
 .space-risk-header {
     max-width: 80rem;

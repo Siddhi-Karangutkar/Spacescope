@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './CosmicWeather.css';
 import { Wind, Activity, Zap, Radio, AlertTriangle, ShieldAlert } from 'lucide-react';
 import SmartTerm from '../components/SmartTerm';
+import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 
 const CosmicWeather = () => {
     const [solarWind, setSolarWind] = useState(null);
@@ -11,6 +12,8 @@ const CosmicWeather = () => {
     const [flares, setFlares] = useState([]);
     const [loading, setLoading] = useState(true);
     const [weatherStatus, setWeatherStatus] = useState({ status: 'Loading...', color: 'text-gray-400', message: 'Analyzing data...' });
+    const [historicalData, setHistoricalData] = useState([]);
+    const [flareIntensityData, setFlareIntensityData] = useState([]);
 
     const API_BASE = 'http://localhost:5002/api';
 
@@ -34,6 +37,37 @@ const CosmicWeather = () => {
     };
 
     useEffect(() => {
+        // Generate historical data for charts
+        const generateHistoricalData = () => {
+            const data = [];
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                data.push({
+                    date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                    solarWindSpeed: 350 + Math.random() * 300,
+                    kIndexValue: Math.random() * 8,
+                    protonFluxLevel: Math.random() * 15,
+                    magneticFieldStrength: -15 + Math.random() * 30
+                });
+            }
+            setHistoricalData(data);
+        };
+
+        const generateFlareData = () => {
+            const data = [
+                { class: 'A-Class', intensity: 20, frequency: 45 },
+                { class: 'B-Class', intensity: 35, frequency: 30 },
+                { class: 'C-Class', intensity: 50, frequency: 20 },
+                { class: 'M-Class', intensity: 75, frequency: 4 },
+                { class: 'X-Class', intensity: 95, frequency: 1 }
+            ];
+            setFlareIntensityData(data);
+        };
+
+        generateHistoricalData();
+        generateFlareData();
+
         const fetchIndividual = async (url, setter, key) => {
             try {
                 const res = await fetch(url);
@@ -127,6 +161,61 @@ const CosmicWeather = () => {
                 solarWindSpeed={solarWind?.speed || 400}
                 bzGsm={magField?.bz_gsm || 0}
             />
+
+            {/* Charts Section */}
+            <div className="weather-charts-section">
+                {/* 7-Day Solar Wind Trends */}
+                <div className="glass-panel weather-chart-panel">
+                    <h3>7-Day Solar Wind & Magnetic Activity</h3>
+                    <ResponsiveContainer width="100%" height={250}>
+                        <LineChart data={historicalData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                            <XAxis dataKey="date" stroke="#9ca3af" />
+                            <YAxis stroke="#9ca3af" />
+                            <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }} />
+                            <Legend />
+                            <Line type="monotone" dataKey="solarWindSpeed" stroke="#3b82f6" strokeWidth={2} name="Solar Wind (km/s)" />
+                            <Line type="monotone" dataKey="magneticFieldStrength" stroke="#f59e0b" strokeWidth={2} name="Bz Component (nT)" />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </div>
+
+                {/* Solar Flare Intensity Distribution */}
+                <div className="glass-panel weather-chart-panel">
+                    <h3>Solar Flare Classification Distribution</h3>
+                    <ResponsiveContainer width="100%" height={250}>
+                        <BarChart data={flareIntensityData}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                            <XAxis dataKey="class" stroke="#9ca3af" />
+                            <YAxis stroke="#9ca3af" />
+                            <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }} />
+                            <Legend />
+                            <Bar dataKey="frequency" fill="#ef4444" name="Frequency (%)" />
+                            <Bar dataKey="intensity" fill="#f59e0b" name="Intensity Level" />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
+
+                {/* Space Weather Radar */}
+                <div className="glass-panel weather-chart-panel wide-chart">
+                    <h3>Space Weather Risk Assessment Radar</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <RadarChart data={[
+                            { factor: 'Solar Wind', value: solarWind?.speed > 500 ? 80 : 40, fullMark: 100 },
+                            { factor: 'K-Index', value: (kIndex?.kp_index || 0) * 12.5, fullMark: 100 },
+                            { factor: 'Proton Flux', value: Math.min((protonFlux?.flux || 0) * 10, 100), fullMark: 100 },
+                            { factor: 'Magnetic Field', value: Math.abs(magField?.bz_gsm || 0) * 5, fullMark: 100 },
+                            { factor: 'Flare Activity', value: flares.length > 0 ? 60 : 20, fullMark: 100 }
+                        ]}>
+                            <PolarGrid stroke="#374151" />
+                            <PolarAngleAxis dataKey="factor" stroke="#9ca3af" />
+                            <PolarRadiusAxis angle={90} domain={[0, 100]} stroke="#9ca3af" />
+                            <Radar name="Current Risk" dataKey="value" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.6} />
+                            <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }} />
+                        </RadarChart>
+                    </ResponsiveContainer>
+                </div>
+            </div>
 
             <div className="weather-grid">
                 {/* Solar Wind Speed */}
