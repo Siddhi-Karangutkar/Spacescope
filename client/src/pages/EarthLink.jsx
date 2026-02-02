@@ -245,13 +245,13 @@ const EarthLink = () => {
             </div>
 
             {/* NASA/ISRO DATA NOTE */}
-            <div className="data-disclaimer glass-panel">
+            {/* <div className="data-disclaimer glass-panel">
                 <Info size={18} className="text-blue mr-3" />
                 <div className="disclaimer-text">
                     <strong>Why does this differ from Google/ISRO Ground Sensors?</strong>
                     <p>Google and mobile apps use ground-level sensors (2m height). Our <strong>NASA Sentinel-5P</strong> telemetry measures the <strong>Total Atmospheric Column</strong>. This "Space View" is what NASA and ISRO use for global climate monitoring, capturing pollutants ground sensors might miss.</p>
                 </div>
-            </div>
+            </div> */}
 
             {/* DISASTER MONITOR */}
             <section className="disaster-section">

@@ -2,7 +2,7 @@
 
 .landing-page.cinematic-theme {
     min-height: 100vh;
-    background: #000000;
+    /* Transparent to show global stars */
     color: #fff;
     font-family: 'Inter', sans-serif;
     position: relative;
@@ -29,8 +29,7 @@
     padding: 0 4rem;
     position: relative;
     z-index: 10;
-    /* Smooth gradient fade to allow 3D overlap visibility */
-    background: linear-gradient(to right, #000000 60%, transparent 100%);
+    /* Transparent for global galaxy */
     pointer-events: none;
     /* Let clicks pass through empty areas */
 }
@@ -202,7 +201,7 @@
     left: 0;
     width: 20%;
     height: 100%;
-    background: linear-gradient(to right, #000000, transparent);
+    /* Transparent for global galaxy */
     pointer-events: none;
     z-index: 5;
     opacity: 0.5;
@@ -246,10 +245,9 @@
     }
 }
 
-/* --- SPACE TIMELINE SECTION --- */
 .timeline-section {
     padding: 6rem 4rem;
-    background: #000;
+    /* Transparent for global galaxy */
     position: relative;
     z-index: 20;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -258,9 +256,15 @@
 }
 
 .timeline-container {
-    max-width: 900px;
+    /* max-width: 900px; */
     width: 100%;
     text-align: center;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 3rem;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 .timeline-title {
@@ -404,10 +408,9 @@
     }
 }
 
-/* --- MODULES SECTION --- */
 .modules-section {
     padding: 6rem 4rem;
-    background: #050505;
+    /* Transparent for global galaxy */
     position: relative;
     z-index: 20;
 }
@@ -536,7 +539,7 @@
     justify-content: space-between;
     align-items: center;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
-    background: #000;
+    /* Transparent for global galaxy */
 }
 
 .footer-left {
@@ -573,7 +576,7 @@
         padding: 6rem 2rem 4rem;
         flex: auto;
         width: 100%;
-        background: #000;
+        /* Transparent for global galaxy */
     }
 
     .hero-right-visual {

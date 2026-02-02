@@ -1,7 +1,7 @@
 .meet-container {
     width: 100vw;
     height: 100vh;
-    background: #02040a;
+    /* Transparent for global galaxy */
     color: #fff;
     overflow: hidden;
     position: relative;

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Search, AlertTriangle, Wind, Zap, Satellite, CloudRain } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import LocationHistory from '../components/LocationHistory';
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import './SpaceRisk.css';
 
@@ -11,6 +12,7 @@ const SpaceRisk = () => {
     const [error, setError] = useState('');
     const [globalRiskTrends, setGlobalRiskTrends] = useState([]);
     const [riskDistribution, setRiskDistribution] = useState([]);
+    const [coordinates, setCoordinates] = useState(null);
 
     // Initialize mock data for charts
     useEffect(() => {
@@ -55,6 +57,7 @@ const SpaceRisk = () => {
             }
 
             const { latitude, longitude, name, country } = geoData.results[0];
+            setCoordinates({ lat: latitude, lon: longitude });
 
             const weatherRes = await fetch(
                 `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=precipitation,wind_speed_10m,cloud_cover&hourly=uv_index&forecast_days=1`
@@ -229,80 +232,88 @@ const SpaceRisk = () => {
                 </div>
             )}
 
+
+            {/* Location History Feature */}
+            {coordinates && riskData && (
+                <LocationHistory city={riskData.location} coordinates={coordinates} />
+            )}
+
             {/* Global Risk Analytics Section */}
-            {!riskData && (
-                <div className="global-risk-analytics">
-                    <h2 className="analytics-title">Global Space Risk Analytics</h2>
-                    
-                    {/* 30-Day Risk Trends */}
-                    <div className="glass-panel risk-chart-panel">
-                        <h3>30-Day Global Risk Trends</h3>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <LineChart data={globalRiskTrends}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                                <XAxis dataKey="date" stroke="#9ca3af" />
-                                <YAxis stroke="#9ca3af" />
-                                <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }} />
-                                <Legend />
-                                <Line type="monotone" dataKey="solarRisk" stroke="#f59e0b" strokeWidth={2} name="Solar Storm Risk" />
-                                <Line type="monotone" dataKey="orbitalRisk" stroke="#3b82f6" strokeWidth={2} name="Orbital Debris Risk" />
-                                <Line type="monotone" dataKey="radiationRisk" stroke="#ef4444" strokeWidth={2} name="Radiation Risk" />
-                                <Line type="monotone" dataKey="communicationRisk" stroke="#8b5cf6" strokeWidth={2} name="Communication Risk" />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </div>
+            {
+                !riskData && (
+                    <div className="global-risk-analytics">
+                        <h2 className="analytics-title">Global Space Risk Analytics</h2>
 
-                    <div className="risk-charts-grid">
-                        {/* Risk Distribution Pie Chart */}
+                        {/* 30-Day Risk Trends */}
                         <div className="glass-panel risk-chart-panel">
-                            <h3>Global Risk Distribution</h3>
-                            <ResponsiveContainer width="100%" height={250}>
-                                <PieChart>
-                                    <Pie
-                                        data={riskDistribution}
-                                        cx="50%"
-                                        cy="50%"
-                                        labelLine={false}
-                                        label={(entry) => `${entry.category}: ${entry.value}%`}
-                                        outerRadius={80}
-                                        fill="#8884d8"
-                                        dataKey="value"
-                                    >
-                                        {riskDistribution.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.color} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }} />
-                                </PieChart>
-                            </ResponsiveContainer>
-                        </div>
-
-                        {/* Regional Risk Comparison */}
-                        <div className="glass-panel risk-chart-panel">
-                            <h3>Regional Risk Comparison</h3>
-                            <ResponsiveContainer width="100%" height={250}>
-                                <BarChart data={[
-                                    { region: 'North America', solar: 35, orbital: 25, radiation: 20 },
-                                    { region: 'Europe', solar: 30, orbital: 20, radiation: 25 },
-                                    { region: 'Asia', solar: 40, orbital: 30, radiation: 35 },
-                                    { region: 'Africa', solar: 45, orbital: 15, radiation: 40 },
-                                    { region: 'South America', solar: 35, orbital: 20, radiation: 30 }
-                                ]}>
+                            <h3>30-Day Global Risk Trends</h3>
+                            <ResponsiveContainer width="100%" height={300}>
+                                <LineChart data={globalRiskTrends}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                                    <XAxis dataKey="region" stroke="#9ca3af" />
+                                    <XAxis dataKey="date" stroke="#9ca3af" />
                                     <YAxis stroke="#9ca3af" />
                                     <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }} />
                                     <Legend />
-                                    <Bar dataKey="solar" fill="#f59e0b" name="Solar Risk" />
-                                    <Bar dataKey="orbital" fill="#3b82f6" name="Orbital Risk" />
-                                    <Bar dataKey="radiation" fill="#ef4444" name="Radiation Risk" />
-                                </BarChart>
+                                    <Line type="monotone" dataKey="solarRisk" stroke="#f59e0b" strokeWidth={2} name="Solar Storm Risk" />
+                                    <Line type="monotone" dataKey="orbitalRisk" stroke="#3b82f6" strokeWidth={2} name="Orbital Debris Risk" />
+                                    <Line type="monotone" dataKey="radiationRisk" stroke="#ef4444" strokeWidth={2} name="Radiation Risk" />
+                                    <Line type="monotone" dataKey="communicationRisk" stroke="#8b5cf6" strokeWidth={2} name="Communication Risk" />
+                                </LineChart>
                             </ResponsiveContainer>
                         </div>
+
+                        <div className="risk-charts-grid">
+                            {/* Risk Distribution Pie Chart */}
+                            <div className="glass-panel risk-chart-panel">
+                                <h3>Global Risk Distribution</h3>
+                                <ResponsiveContainer width="100%" height={250}>
+                                    <PieChart>
+                                        <Pie
+                                            data={riskDistribution}
+                                            cx="50%"
+                                            cy="50%"
+                                            labelLine={false}
+                                            label={(entry) => `${entry.category}: ${entry.value}%`}
+                                            outerRadius={80}
+                                            fill="#8884d8"
+                                            dataKey="value"
+                                        >
+                                            {riskDistribution.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={entry.color} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }} />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </div>
+
+                            {/* Regional Risk Comparison */}
+                            <div className="glass-panel risk-chart-panel">
+                                <h3>Regional Risk Comparison</h3>
+                                <ResponsiveContainer width="100%" height={250}>
+                                    <BarChart data={[
+                                        { region: 'North America', solar: 35, orbital: 25, radiation: 20 },
+                                        { region: 'Europe', solar: 30, orbital: 20, radiation: 25 },
+                                        { region: 'Asia', solar: 40, orbital: 30, radiation: 35 },
+                                        { region: 'Africa', solar: 45, orbital: 15, radiation: 40 },
+                                        { region: 'South America', solar: 35, orbital: 20, radiation: 30 }
+                                    ]}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                                        <XAxis dataKey="region" stroke="#9ca3af" />
+                                        <YAxis stroke="#9ca3af" />
+                                        <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }} />
+                                        <Legend />
+                                        <Bar dataKey="solar" fill="#f59e0b" name="Solar Risk" />
+                                        <Bar dataKey="orbital" fill="#3b82f6" name="Orbital Risk" />
+                                        <Bar dataKey="radiation" fill="#ef4444" name="Radiation Risk" />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
 

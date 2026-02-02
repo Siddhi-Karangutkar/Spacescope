@@ -148,7 +148,7 @@ const CosmicWeather = () => {
                 <h1 className="page-title glow-text">Cosmic Weather Station</h1>
                 <div className={`status-banner glass-panel ${weatherStatus.color === 'text-red-500' ? 'border-red-500' : ''}`}>
                     <div className="status-main">
-                        <span className="status-label">Current Condition:</span>
+                        <span className="status-label">Current Condition: </span>
                         <span className={`status-value ${weatherStatus.color}`}>{weatherStatus.status}</span>
                     </div>
                     <p className="status-message">{weatherStatus.message}</p>

@@ -275,7 +275,7 @@ const CareerPath = () => {
         }
     ];
 
-    const filteredCareers = careers.filter(career => 
+    const filteredCareers = careers.filter(career =>
         (!selectedInterest || career.category === selectedInterest) &&
         (!selectedLevel || true) // All careers available for all levels
     );
@@ -301,96 +301,100 @@ const CareerPath = () => {
         setSimulationMode(true);
     };
 
-        const getSimulationData = (career, location) => {
-            // Simulate different data based on career
-            switch(career.id) {
-                case 'climate-scientist':
-                    return {
-                        title: 'Climate Impact Analysis',
-                        metrics: [
-                            { label: 'Temperature Rise', value: '+2.3°C', trend: 'up' },
-                            { label: 'Sea Level Change', value: '+3.2mm/year', trend: 'up' },
-                            { label: 'Carbon Levels', value: '415 ppm', trend: 'up' }
-                        ],
-                        impact: 'Your analysis helps cities prepare for climate change'
-                    };
-                case 'satellite-analyst':
-                    return {
-                        title: 'Satellite Monitoring Dashboard',
-                        metrics: [
-                            { label: 'Deforestation Rate', value: '-12%', trend: 'down' },
-                            { label: 'Crop Health', value: '87%', trend: 'stable' },
-                            { label: 'Urban Growth', value: '+5.2%', trend: 'up' }
-                        ],
-                        impact: 'Your monitoring protects forests and feeds communities'
-                    };
-                case 'mission-controller':
-                    return {
-                        title: 'Mission Control Systems',
-                        metrics: [
-                            { label: 'Spacecraft Status', value: 'Nominal', trend: 'stable' },
-                            { label: 'Communication Link', value: '98.5%', trend: 'up' },
-                            { label: 'Mission Progress', value: '67%', trend: 'up' }
-                        ],
-                        impact: 'Your expertise ensures successful space missions'
-                    };
-                case 'space-medicine':
-                    return {
-                        title: 'Astronaut Health Monitoring',
-                        metrics: [
-                            { label: 'Vital Signs', value: 'Normal', trend: 'stable' },
-                            { label: 'Radiation Exposure', value: 'Safe Levels', trend: 'down' },
-                            { label: 'Bone Density', value: '98%', trend: 'stable' }
-                        ],
-                        impact: 'Your medical knowledge keeps astronauts healthy in space'
-                    };
-                case 'ai-space-researcher':
-                    return {
-                        title: 'AI Space Data Analysis',
-                        metrics: [
-                            { label: 'Data Processed', value: '5.2 TB', trend: 'up' },
-                            { label: 'AI Accuracy', value: '96.8%', trend: 'up' },
-                            { label: 'Discoveries', value: '12', trend: 'up' }
-                        ],
-                        impact: 'Your AI algorithms unlock secrets of the universe'
-                    };
-                case 'planetary-geologist':
-                    return {
-                        title: 'Planetary Sample Analysis',
-                        metrics: [
-                            { label: 'Samples Analyzed', value: '234', trend: 'up' },
-                            { label: 'Mineral Discoveries', value: '8', trend: 'up' },
-                            { label: 'Research Papers', value: '5', trend: 'up' }
-                        ],
-                        impact: 'Your geological research helps plan future space settlements'
-                    };
-                case 'space-entrepreneur':
-                    return {
-                        title: 'Space Startup Metrics',
-                        metrics: [
-                            { label: 'Funding Raised', value: '$2.5M', trend: 'up' },
-                            { label: 'Team Size', value: '24', trend: 'up' },
-                            { label: 'Market Impact', value: 'High', trend: 'up' }
-                        ],
-                        impact: 'Your innovation is shaping the future of space industry'
-                    };
-                default:
-                    return {
-                        title: 'Space Data Analysis',
-                        metrics: [
-                            { label: 'Data Processed', value: '2.3 TB', trend: 'up' },
-                            { label: 'Accuracy', value: '94.5%', trend: 'stable' },
-                            { label: 'Discoveries', value: '7', trend: 'up' }
-                        ],
-                        impact: 'Your work advances human knowledge of space'
-                    };
-            }
-        };
+    const getSimulationData = (career, location) => {
+        // Simulate different data based on career
+        switch (career.id) {
+            case 'climate-scientist':
+                return {
+                    title: 'Climate Impact Analysis',
+                    metrics: [
+                        { label: 'Temperature Rise', value: '+2.3°C', trend: 'up' },
+                        { label: 'Sea Level Change', value: '+3.2mm/year', trend: 'up' },
+                        { label: 'Carbon Levels', value: '415 ppm', trend: 'up' }
+                    ],
+                    impact: 'Your analysis helps cities prepare for climate change'
+                };
+            case 'satellite-analyst':
+                return {
+                    title: 'Satellite Monitoring Dashboard',
+                    metrics: [
+                        { label: 'Deforestation Rate', value: '-12%', trend: 'down' },
+                        { label: 'Crop Health', value: '87%', trend: 'stable' },
+                        { label: 'Urban Growth', value: '+5.2%', trend: 'up' }
+                    ],
+                    impact: 'Your monitoring protects forests and feeds communities'
+                };
+            case 'mission-controller':
+                return {
+                    title: 'Mission Control Systems',
+                    metrics: [
+                        { label: 'Spacecraft Status', value: 'Nominal', trend: 'stable' },
+                        { label: 'Communication Link', value: '98.5%', trend: 'up' },
+                        { label: 'Mission Progress', value: '67%', trend: 'up' }
+                    ],
+                    impact: 'Your expertise ensures successful space missions'
+                };
+            case 'space-medicine':
+                return {
+                    title: 'Astronaut Health Monitoring',
+                    metrics: [
+                        { label: 'Vital Signs', value: 'Normal', trend: 'stable' },
+                        { label: 'Radiation Exposure', value: 'Safe Levels', trend: 'down' },
+                        { label: 'Bone Density', value: '98%', trend: 'stable' }
+                    ],
+                    impact: 'Your medical knowledge keeps astronauts healthy in space'
+                };
+            case 'ai-space-researcher':
+                return {
+                    title: 'AI Space Data Analysis',
+                    metrics: [
+                        { label: 'Data Processed', value: '5.2 TB', trend: 'up' },
+                        { label: 'AI Accuracy', value: '96.8%', trend: 'up' },
+                        { label: 'Discoveries', value: '12', trend: 'up' }
+                    ],
+                    impact: 'Your AI algorithms unlock secrets of the universe'
+                };
+            case 'planetary-geologist':
+                return {
+                    title: 'Planetary Sample Analysis',
+                    metrics: [
+                        { label: 'Samples Analyzed', value: '234', trend: 'up' },
+                        { label: 'Mineral Discoveries', value: '8', trend: 'up' },
+                        { label: 'Research Papers', value: '5', trend: 'up' }
+                    ],
+                    impact: 'Your geological research helps plan future space settlements'
+                };
+            case 'space-entrepreneur':
+                return {
+                    title: 'Space Startup Metrics',
+                    metrics: [
+                        { label: 'Funding Raised', value: '$2.5M', trend: 'up' },
+                        { label: 'Team Size', value: '24', trend: 'up' },
+                        { label: 'Market Impact', value: 'High', trend: 'up' }
+                    ],
+                    impact: 'Your innovation is shaping the future of space industry'
+                };
+            default:
+                return {
+                    title: 'Space Data Analysis',
+                    metrics: [
+                        { label: 'Data Processed', value: '2.3 TB', trend: 'up' },
+                        { label: 'Accuracy', value: '94.5%', trend: 'stable' },
+                        { label: 'Discoveries', value: '7', trend: 'up' }
+                    ],
+                    impact: 'Your work advances human knowledge of space'
+                };
+        }
+    };
 
     return (
         <div className="career-path-container">
-            <header className="career-header">
-                <h1 className="page-title">🚀 Space Career Learning Path</h1>
+            <header className="career-page-header">
+                <h1 className="page-title">
+                    
+                    <span className="title-text"> 🚀 SPACE CAREER</span>
+                    <span className="title-subtext">LEARNING PATH</span>
+                </h1>
                 <p className="page-subtitle">From curiosity to career - your journey into the space industry starts here</p>
             </header>
 
@@ -429,7 +433,7 @@ const CareerPath = () => {
                         </div>
                     </div>
 
-                    <button 
+                    <button
                         className="explore-btn primary-btn"
                         onClick={() => {
                             if (!selectedInterest || !selectedLevel) {
@@ -470,57 +474,57 @@ const CareerPath = () => {
 
             {/* Career Cards Grid */}
             {showCareers && (
-            <section className="careers-section">
-                <h2>🧑‍🚀 Your Career Opportunities</h2>
-                <div className="careers-grid">
-                    {filteredCareers.map(career => (
-                        <div key={career.id} className="career-card glass-panel">
-                            <div className="career-header">
-                                <div className="career-icon">{career.icon}</div>
-                                <div className="career-info">
-                                    <h3>{career.title}</h3>
-                                    <div className="career-meta">
-                                        <span className="salary">{career.salary}</span>
-                                        <span className="growth">{career.growth}</span>
+                <section className="careers-section">
+                    <h2>🧑‍🚀 Your Career Opportunities</h2>
+                    <div className="careers-grid">
+                        {filteredCareers.map(career => (
+                            <div key={career.id} className="career-card glass-panel">
+                                <div className="career-header">
+                                    <div className="career-icon">{career.icon}</div>
+                                    <div className="career-info">
+                                        <h3>{career.title}</h3>
+                                        <div className="career-meta">
+                                            <span className="salary">{career.salary}</span>
+                                            <span className="growth">{career.growth}</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <p className="career-description">{career.description}</p>
-                            
-                            <div className="career-impact">
-                                <strong>Real-world impact:</strong> {career.realWorld}
-                            </div>
 
-                            <div className="career-progress">
-                                <div className="progress-bar">
-                                    <div 
-                                        className="progress-fill" 
-                                        style={{ width: `${calculateProgress(career)}%` }}
-                                    ></div>
+                                <p className="career-description">{career.description}</p>
+
+                                <div className="career-impact">
+                                    <strong>Real-world impact:</strong> {career.realWorld}
                                 </div>
-                                <span className="progress-text">{calculateProgress(career)}% ready</span>
-                            </div>
 
-                            <div className="career-actions">
-                                <button 
-                                    className="view-career-btn"
-                                    onClick={() => setSelectedCareer(career)}
-                                >
-                                    View Details
-                                </button>
-                                <button 
-                                    className="simulate-btn"
-                                    onClick={() => startSimulation(career)}
-                                >
-                                    <Play size={16} />
-                                    Simulate
-                                </button>
+                                <div className="career-progress">
+                                    <div className="progress-bar">
+                                        <div
+                                            className="progress-fill"
+                                            style={{ width: `${calculateProgress(career)}%` }}
+                                        ></div>
+                                    </div>
+                                    <span className="progress-text">{calculateProgress(career)}% ready</span>
+                                </div>
+
+                                <div className="career-actions">
+                                    <button
+                                        className="view-career-btn"
+                                        onClick={() => setSelectedCareer(career)}
+                                    >
+                                        View Details
+                                    </button>
+                                    <button
+                                        className="simulate-btn"
+                                        onClick={() => startSimulation(career)}
+                                    >
+                                        <Play size={16} />
+                                        Simulate
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
-            </section>
+                        ))}
+                    </div>
+                </section>
             )}
 
             {/* Career Detail Modal */}
@@ -538,8 +542,8 @@ const CareerPath = () => {
                             <h3>🛤️ Your Learning Path</h3>
                             <div className="path-timeline">
                                 {selectedCareer.learningPath.map((step, index) => (
-                                    <div 
-                                        key={index} 
+                                    <div
+                                        key={index}
                                         className={`timeline-step ${currentStep >= index ? 'completed' : ''} ${currentStep === index ? 'active' : ''}`}
                                         onClick={() => setCurrentStep(index)}
                                     >
@@ -566,8 +570,8 @@ const CareerPath = () => {
                             <h3>🧠 Skill Tracker</h3>
                             <div className="skills-grid">
                                 {selectedCareer.skills.map(skill => (
-                                    <div 
-                                        key={skill} 
+                                    <div
+                                        key={skill}
                                         className={`skill-item ${completedSkills.has(skill) ? 'completed' : ''}`}
                                         onClick={() => toggleSkill(skill)}
                                     >
@@ -628,8 +632,8 @@ const CareerPath = () => {
 
                         <div className="location-selector">
                             <MapPin size={20} />
-                            <select 
-                                value={simulationLocation} 
+                            <select
+                                value={simulationLocation}
                                 onChange={(e) => setSimulationLocation(e.target.value)}
                                 className="location-select"
                             >
@@ -649,7 +653,7 @@ const CareerPath = () => {
                                     <div className="simulation-dashboard">
                                         <h3>{simData.title}</h3>
                                         <p className="simulation-location">Analyzing data for: {simulationLocation}</p>
-                                        
+
                                         <div className="metrics-grid">
                                             {simData.metrics.map((metric, index) => (
                                                 <div key={index} className="metric-card">

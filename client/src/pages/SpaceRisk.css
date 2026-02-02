@@ -6,8 +6,7 @@
     padding-bottom: 3rem;
     padding-left: 2rem;
     padding-right: 2rem;
-    background-color: #050505;
-    /* Fallback/Base color matching dashboard */
+    /* Transparent background to show global galaxy theme */
     color: #fff;
     font-family: 'Inter', sans-serif;
 }
@@ -207,6 +206,185 @@
     font-weight: 500;
     letter-spacing: 0.025em;
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* --- Location History Feature --- */
+.location-history-container {
+    margin-top: 3rem;
+    padding: 2rem;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.timeline-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem 1.5rem;
+    border-radius: 50px;
+}
+
+.timeline-slider {
+    width: 300px;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.2);
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.timeline-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #00f3ff;
+    cursor: pointer;
+    box-shadow: 0 0 10px #00f3ff;
+}
+
+.maps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    height: 400px;
+    /* Fixed height for consistency */
+    transition: all 0.5s ease;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.map-card-wrapper {
+    background: rgba(10, 10, 15, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    padding-bottom: 1rem;
+    /* Added bottom padding */
+}
+
+
+
+.legend-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.65rem;
+    color: #000;
+    /* Fixed: Black text */
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.map-card-wrapper.maximized {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Cover the grid area */
+    z-index: 10;
+}
+
+.map-card-wrapper.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.95);
+}
+
+.map-card-header {
+    padding: 0.8rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.map-container-frame {
+    flex: 1;
+    position: relative;
+    min-height: 200px;
+}
+
+.map-heatmap-legend {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(5, 5, 10, 0.85);
+    /* Dark background */
+    padding: 10px 12px;
+    border-radius: 8px;
+    backdrop-filter: blur(8px);
+    z-index: 500;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    min-width: 140px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.legend-title {
+    display: block;
+    font-size: 0.7rem;
+    color: #e2e8f0;
+    margin-bottom: 6px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.gradient-bar {
+    height: 10px;
+    width: 100%;
+    border-radius: 5px;
+    margin-bottom: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.legend-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.65rem;
+    color: #94a3b8;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* --- Monochrome Filters --- */
+/* Darker & Moody Variations */
+
+.monochrome-sepia .leaflet-layer {
+    filter: sepia(100%) hue-rotate(320deg) saturate(2) brightness(0.6) contrast(1.4);
+    /* Dark Rusty color */
+}
+
+.monochrome-blue .leaflet-layer {
+    filter: invert(5%) sepia(100%) hue-rotate(185deg) saturate(3) brightness(0.6) contrast(1.5);
+    /* Deep Dark Blue */
+}
+
+.monochrome-red .leaflet-layer {
+    filter: grayscale(100%) brightness(0.6) contrast(1.8) sepia(40%) hue-rotate(-50deg) saturate(4);
+    /* Dark Crimson Storms */
+}
+
+/* Map fix */
+.leaflet-container {
+    background: #000 !important;
 }
 
 /* --- Results Section --- */
@@ -517,4 +695,20 @@
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+.map-summary{
+    padding-left: 15px;
+    padding-right: 15px ;
+}
+
+.conclusion-card{
+    padding: 15px;
+    margin-bottom: 10px;
+}
+.prediction-card{
+    padding: 15px;    
+}
+.history-footer-grid{
+    margin-bottom: 10px;
 }

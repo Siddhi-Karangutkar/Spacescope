@@ -3,7 +3,7 @@
 .satellite-view-container {
     width: 100%;
     height: calc(100vh - 70px);
-    background: #000;
+    /* Transparent for global galaxy */
     position: relative;
     overflow: hidden;
     color: #fff;

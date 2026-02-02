@@ -3,31 +3,60 @@
 .career-path-container {
     padding: 100px 2rem 2rem;
     min-height: 100vh;
-    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+    /* Transparent for global galaxy */
     color: #ffffff;
 }
 
-.career-header {
+.career-page-header {
     text-align: center;
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
 }
 
 .page-title {
-    font-size: 3rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 3.5rem;
+    font-weight: 900;
+    margin-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.1;
+    letter-spacing: 4px;
+    background: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    text-transform: uppercase;
+}
+
+/* .rocket-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    filter: drop-shadow(0 0 15px rgba(129, 140, 248, 0.6));
+    -webkit-text-fill-color: initial;
+} */
+
+.title-text {
+    font-size: 4rem;
+}
+
+.title-subtext {
+    font-size: 3rem;
+    text-align: center;
 }
 
 .page-subtitle {
-    font-size: 1.2rem;
-    color: #d0d0d0;
+    font-size: 1.3rem;
+    color: #e2e8f0;
     max-width: 600px;
     margin: 0 auto;
     line-height: 1.6;
+    font-weight: 400;
+    opacity: 0.9;
 }
 
 /* Welcome Section */
@@ -335,7 +364,8 @@
     gap: 1rem;
 }
 
-.view-career-btn, .simulate-btn {
+.view-career-btn,
+.simulate-btn {
     flex: 1;
     padding: 0.75rem 1rem;
     border: 2px solid #667eea;
@@ -351,7 +381,8 @@
     font-weight: 500;
 }
 
-.view-career-btn:hover, .simulate-btn:hover {
+.view-career-btn:hover,
+.simulate-btn:hover {
     background: rgba(102, 126, 234, 0.1);
 }
 
@@ -867,53 +898,53 @@
     .career-path-container {
         padding: 100px 1rem 1rem;
     }
-    
+
     .page-title {
         font-size: 2rem;
     }
-    
+
     .careers-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .interest-grid {
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     }
-    
+
     .level-selector {
         flex-direction: column;
     }
-    
+
     .career-actions {
         flex-direction: column;
     }
-    
+
     .instructors-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .metrics-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .simulation-impact {
         flex-direction: column;
         text-align: center;
     }
-    
+
     .feature-highlights {
         gap: 1rem;
     }
-    
+
     .highlight-item {
         min-width: 120px;
         padding: 1rem;
     }
-    
+
     .discovery-panel {
         padding: 1.5rem;
     }
-    
+
     .welcome-content {
         padding: 2rem 1.5rem;
     }

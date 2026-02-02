@@ -45,6 +45,7 @@
     font-size: 1.2rem;
     color: var(--text-secondary);
     margin-bottom: 3rem;
+    padding-bottom: 15px;
 }
 
 /* HUB STYLES */
@@ -366,6 +367,15 @@
 }
 
 /* PLANET EXPLORER STYLES */
+.planet-info-panel {
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    overflow-y: auto;
+    max-height: 700px;
+}
+
 .planet-card {
     border-top: 4px solid #fff;
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent);
@@ -558,8 +568,15 @@
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.8; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
 }
 
 /* Planet Age Calculator */

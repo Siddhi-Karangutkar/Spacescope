@@ -1,7 +1,7 @@
 .admin-portal-wrapper {
     height: 100vh;
     overflow: hidden;
-    background: #000;
+    /* Transparent to show global galaxy theme */
 }
 
 .admin-portal-container {
