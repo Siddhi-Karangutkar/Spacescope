@@ -43,9 +43,15 @@ const InstructorConnect = () => {
         try {
             const res = await fetch('http://localhost:5002/api/instructors');
             const data = await res.json();
-            setInstructors(data);
+            if (Array.isArray(data)) {
+                setInstructors(data);
+            } else {
+                console.error('API Error:', data);
+                setInstructors([]);
+            }
         } catch (err) {
             console.error('Error fetching instructors:', err);
+            setInstructors([]);
         } finally {
             setIsLoading(false);
         }

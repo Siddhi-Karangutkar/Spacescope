@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sun, Moon, Rocket, Telescope } from 'lucide-react';
+import { Sun, Moon, Rocket, Telescope, Menu, X } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import AdminLogin from './AdminLogin';
 import './Navbar.css';
@@ -9,6 +9,7 @@ const Navbar = () => {
     const { theme, toggleTheme } = useTheme();
     const [logoClicks, setLogoClicks] = useState(0);
     const [showAdminLogin, setShowAdminLogin] = useState(false);
+    const [isMobileOpen, setIsMobileOpen] = useState(false);
 
     const handleLogoClick = (e) => {
         if (logoClicks + 1 === 5) {
@@ -18,6 +19,10 @@ const Navbar = () => {
         } else {
             setLogoClicks(prev => prev + 1);
         }
+    };
+
+    const toggleMobileMenu = () => {
+        setIsMobileOpen(!isMobileOpen);
     };
 
     return (
@@ -31,20 +36,24 @@ const Navbar = () => {
                     </span>
                 </Link>
 
+                <button className="mobile-toggle" onClick={toggleMobileMenu} aria-label="Toggle Menu">
+                    {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
+
                 {showAdminLogin && <AdminLogin onClose={() => setShowAdminLogin(false)} />}
 
-                <div className="navbar-links">
-                    <Link to="/" className="nav-link">Home</Link>
-                    <Link to="/dashboard" className="nav-link">Dashboard</Link>
-                    <Link to="/career-path" className="nav-link">Career Path</Link>
+                <div className={`navbar-links ${isMobileOpen ? 'mobile-open' : ''}`}>
+                    <Link to="/" className="nav-link" onClick={() => setIsMobileOpen(false)}>Home</Link>
+                    <Link to="/dashboard" className="nav-link" onClick={() => setIsMobileOpen(false)}>Dashboard</Link>
+                    <Link to="/career-path" className="nav-link" onClick={() => setIsMobileOpen(false)}>Career Path</Link>
                     {/* <Link to="/community" className="nav-link">Crew Quarters</Link> */}
                     {/* <Link to="/cosmic-weather" className="nav-link">Cosmic Weather</Link>
                     <Link to="/space-events" className="nav-link">Space Events</Link>
                     <Link to="/asteroid-radar" className="nav-link">Asteroid Radar</Link>
                     <Link to="/missions" className="nav-link">Missions</Link>
                     <Link to="/learn" className="nav-link">Learn</Link> */}
-                    <Link to="/instructor-connect" className="nav-link">Connect</Link>
-                    <Link to="/earth-link" className="nav-link highlight">EarthLink</Link>
+                    <Link to="/instructor-connect" className="nav-link" onClick={() => setIsMobileOpen(false)}>Connect</Link>
+                    <Link to="/earth-link" className="nav-link highlight" onClick={() => setIsMobileOpen(false)}>EarthLink</Link>
 
                     <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle Theme">
                         {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
@@ -54,5 +63,6 @@ const Navbar = () => {
         </nav>
     );
 };
+
 
 export default Navbar;

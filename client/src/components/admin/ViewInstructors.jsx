@@ -14,13 +14,20 @@ const ViewInstructors = () => {
         try {
             const res = await fetch('http://localhost:5002/api/instructors');
             const data = await res.json();
-            const mapped = data.map(ins => ({
-                ...ins,
-                approvedDate: ins.approved_date
-            }));
-            setInstructors(mapped);
+
+            if (Array.isArray(data)) {
+                const mapped = data.map(ins => ({
+                    ...ins,
+                    approvedDate: ins.approved_date
+                }));
+                setInstructors(mapped);
+            } else {
+                console.error('API Error:', data);
+                setInstructors([]);
+            }
         } catch (err) {
             console.error('Error fetching instructors:', err);
+            setInstructors([]);
         }
     };
 

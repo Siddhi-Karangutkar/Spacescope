@@ -602,3 +602,31 @@
         gap: 1rem;
     }
 }
+
+@media (max-width: 480px) {
+    .cinematic-title {
+        font-size: 2.25rem;
+    }
+
+    .hero-left-content {
+        padding: 4rem 1.5rem 2rem;
+    }
+
+    .hero-right-visual {
+        height: 40vh;
+    }
+
+    .hero-stats {
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .stat-separator {
+        display: none;
+    }
+
+    .timeline-container,
+    .modules-section {
+        padding: 2rem 1rem;
+    }
+}

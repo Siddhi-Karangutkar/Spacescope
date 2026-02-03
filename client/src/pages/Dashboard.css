@@ -6,9 +6,19 @@
 
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 2rem;
     margin-top: 2rem;
+}
+
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 80px 1rem 1rem;
+    }
+
+    .dashboard-grid {
+        gap: 1rem;
+    }
 }
 
 .widget {
