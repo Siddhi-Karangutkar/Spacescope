@@ -158,7 +158,37 @@ const templates = {
             `<p>${notification.message}</p>
             ${notification.link ? `<a href="http://localhost:3000${notification.link}" class="button">Launch Module</a>` : ''}`
         );
-    }
+    },
+
+    instructorApproval: (data) => layout(
+        'Instructor Commission Approved',
+        'Command Clearance Granted',
+        'banner-planning',
+        `
+        <p>Greetings ${data.name},</p>
+        <p>Your application to join the SpaceScope Elite Faculty has been meticulously reviewed and <strong>APPROVED</strong> by the Command Center.</p>
+        
+        <div class="module" style="background: #161b22; border-color: #238636; text-align: center;">
+            <p style="font-size: 14px; opacity: 0.8; margin-bottom: 10px;">YOUR SECURE ACCESS CODE</p>
+            <h2 style="font-family: monospace; font-size: 32px; color: #58a6ff; margin: 0; letter-spacing: 5px;">${data.accessCode}</h2>
+        </div>
+
+        <div class="section-title">🚀 Next Steps</div>
+        <ul style="color: #f0f6fc; padding-left: 20px;">
+            <li style="margin-bottom: 8px;">Log in to the <strong>Instructor Portal</strong> using your email and the code above.</li>
+            <li style="margin-bottom: 8px;">Complete your biometric profile and set your teaching preferences.</li>
+            <li style="margin-bottom: 8px;">Schedule your first "Cosmic Briefing" or live session.</li>
+        </ul>
+
+        <div class="educational-tip">
+            <strong>Security Protocol:</strong> Do not share this Access Code with any unauthorized personnel or terrestrial bots. It is your unique signature for the Command Center.
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="http://localhost:3000/instructor/portal" class="button">Enter Instructor Terminal</a>
+        </div>
+        `
+    )
 };
 
 module.exports = templates;

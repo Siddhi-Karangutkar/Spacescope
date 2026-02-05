@@ -50,13 +50,45 @@ const Community = () => {
         }
     };
 
+    // IMAGE COMPRESSION UTILITY
+    const compressImage = (base64Str, maxWidth = 1200, maxHeight = 1200) => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.src = base64Str;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height *= maxWidth / width;
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width *= maxHeight / height;
+                        height = maxHeight;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', 0.7)); // Compressing to JPEG 70%
+            };
+        });
+    };
+
     // Form Handlers
     const handleFileChange = (e) => {
         const files = Array.from(e.target.files);
         files.forEach(file => {
             const reader = new FileReader();
-            reader.onloadend = () => {
-                setForm(prev => ({ ...prev, images: [...prev.images, reader.result] }));
+            reader.onloadend = async () => {
+                const compressed = await compressImage(reader.result);
+                setForm(prev => ({ ...prev, images: [...prev.images, compressed] }));
             };
             reader.readAsDataURL(file);
         });
@@ -66,8 +98,9 @@ const Community = () => {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onloadend = () => {
-                setInstructorForm(prev => ({ ...prev, [field]: reader.result }));
+            reader.onloadend = async () => {
+                const compressed = await compressImage(reader.result);
+                setInstructorForm(prev => ({ ...prev, [field]: compressed }));
             };
             reader.readAsDataURL(file);
         }

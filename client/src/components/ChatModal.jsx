@@ -33,19 +33,29 @@ const ChatModal = ({ instructor, onClose }) => {
         e.preventDefault();
         if (!input.trim()) return;
 
+        // Determine sender name (Instructor if logged in, otherwise Student)
+        let senderName = 'Student';
+        const instructorInfo = localStorage.getItem('instructorInfo');
+        if (instructorInfo) {
+            const parsed = JSON.parse(instructorInfo);
+            senderName = parsed.name;
+        }
+
         const newMessage = {
             roomId,
-            sender: 'Student',
+            sender: senderName,
             text: input,
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
 
         socket.emit('send_message', newMessage);
-        setMessages(prev => [...prev, newMessage]);
+        // Removed: setMessages(prev => [...prev, newMessage]); 
+        // We now rely on 'receive_message' socket event to avoid duplication.
+
         setInput('');
 
-        // Simulate Instructor Response for Demo
-        if (input.toLowerCase().includes('hello') || input.toLowerCase().includes('hi')) {
+        // Simulate Instructor Response for Demo (only if the sender is not the instructor themselves)
+        if (senderName !== instructor.name && (input.toLowerCase().includes('hello') || input.toLowerCase().includes('hi'))) {
             setTimeout(() => {
                 const response = {
                     roomId,
@@ -54,7 +64,7 @@ const ChatModal = ({ instructor, onClose }) => {
                     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                     isInstructor: true
                 };
-                setMessages(prev => [...prev, response]);
+                socket.emit('send_message', response);
             }, 1000);
         }
     };
@@ -79,7 +89,7 @@ const ChatModal = ({ instructor, onClose }) => {
 
                 <div className="chat-messages">
                     {messages.map((msg, idx) => (
-                        <div key={idx} className={`message-wrapper ${msg.isSystem ? 'system' : msg.sender === 'Student' ? 'outgoing' : 'incoming'}`}>
+                        <div key={idx} className={`message-wrapper ${msg.isSystem ? 'system' : msg.senderId === socket.id ? 'outgoing' : 'incoming'}`}>
                             {!msg.isSystem && (
                                 <div className="message-info">
                                     <span className="sender-name">{msg.sender}</span>

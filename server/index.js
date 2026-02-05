@@ -7,6 +7,8 @@ const { Server } = require('socket.io');
 const db = require('./db');
 
 dotenv.config();
+const emailService = require('./services/emailService');
+const verificationService = require('./services/verificationService');
 
 const app = express();
 const server = http.createServer(app);
@@ -22,7 +24,8 @@ app.set('io', io);
 const PORT = process.env.PORT || 5002;
 
 app.use(cors());
-app.use(express.json({ limit: '10mb' })); // Increased limit for images/PDFs
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // DB Initialization
 const initDB = async () => {
@@ -65,6 +68,11 @@ const initDB = async () => {
                 IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='instructors' AND column_name='upcoming_session') THEN
                     ALTER TABLE instructors ADD COLUMN upcoming_session TIMESTAMP;
                 END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='instructor_applications' AND column_name='ai_status') THEN
+                    ALTER TABLE instructor_applications ADD COLUMN ai_status TEXT DEFAULT 'PENDING';
+                    ALTER TABLE instructor_applications ADD COLUMN ai_score INTEGER DEFAULT 0;
+                    ALTER TABLE instructor_applications ADD COLUMN ai_remarks TEXT;
+                END IF;
             END $$;
         `);
 
@@ -102,6 +110,9 @@ const initDB = async () => {
                 certificate TEXT,
                 id_card TEXT,
                 status TEXT DEFAULT 'PENDING',
+                ai_status TEXT DEFAULT 'PENDING', -- PENDING, VERIFIED, FLAGGED
+                ai_score INTEGER DEFAULT 0,
+                ai_remarks TEXT,
                 applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
@@ -260,15 +271,23 @@ app.get('/', (req, res) => {
 });
 
 // --- INSTRUCTOR APIS ---
+const { verifyApplication } = require('./services/verificationService');
+
 app.post('/api/instructor-applications', async (req, res) => {
     try {
         const { fullName, email, specialization, bio, resume, certificate, idCard } = req.body;
+
+        // Trigger AI Verification in the background or wait if we want instant feedback
+        // For better UX during long uploads, we'll wait and provide the results
+        const aiResult = await verifyApplication({ fullName, email, specialization, bio, resume, certificate, idCard });
+
         const result = await db.query(
-            'INSERT INTO instructor_applications (full_name, email, specialization, bio, resume, certificate, id_card) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-            [fullName, email, specialization, bio, resume, certificate, idCard]
+            'INSERT INTO instructor_applications (full_name, email, specialization, bio, resume, certificate, id_card, ai_status, ai_score, ai_remarks) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *',
+            [fullName, email, specialization, bio, resume, certificate, idCard, aiResult.status, aiResult.score, aiResult.remarks]
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {
+        console.error("Application processing failed:", err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -308,6 +327,16 @@ app.post('/api/verify-instructor', async (req, res) => {
                 'UPDATE instructors SET access_code = $1 WHERE email = $2',
                 [accessCode, applicant.email]
             );
+
+            // 3. Send approval email with access code
+            try {
+                await emailService.sendInstructorApprovalEmail(applicant.email, applicant.full_name, accessCode);
+                console.log(`✅ Access code email sent to ${applicant.email}`);
+            } catch (mailErr) {
+                console.error(`❌ Failed to send access code email to ${applicant.email}:`, mailErr);
+                // We don't fail the whole request if email fails, as the instructor is still approved in DB
+            }
+
             console.log(`Generated access code for ${applicant.email}: ${accessCode}`);
         }
 
@@ -435,6 +464,49 @@ app.post('/api/reports', async (req, res) => {
         res.status(201).json(result.rows[0]);
     } catch (err) {
         res.status(500).json({ error: err.message });
+    }
+});
+
+// --- CHATBOT API (Space Specialist) ---
+app.post('/api/chat', async (req, res) => {
+    const { message, history } = req.body;
+    const GROQ_CHATBOT_API = process.env.GROQ_CHATBOT_API;
+
+    if (!GROQ_CHATBOT_API) {
+        return res.status(503).json({ error: "Chatbot service currently offline (API Key Missing)" });
+    }
+
+    try {
+        const response = await axios.post(
+            'https://api.groq.com/openai/v1/chat/completions',
+            {
+                model: "llama-3.3-70b-versatile",
+                messages: [
+                    {
+                        role: "system",
+                        content: "You are Cosmic AI, a specialist in observational space science, mission intelligence, and astrophysics. You assist users of the SpaceScope platform with queries about space weather, asteroid tracking, satellite telemetry, and cosmic missions. Keep your responses concise, intelligent, and slightly futuristic. Use markdown for better formatting."
+                    },
+                    ...history.map(msg => ({
+                        role: msg.sender === 'bot' ? 'assistant' : 'user',
+                        content: msg.text
+                    })),
+                    { role: "user", content: message }
+                ],
+                temperature: 0.7,
+                max_tokens: 500
+            },
+            {
+                headers: {
+                    'Authorization': `Bearer ${GROQ_CHATBOT_API}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        res.json({ text: response.data.choices[0].message.content });
+    } catch (err) {
+        console.error("Groq Chat Error:", err.response?.data || err.message);
+        res.status(500).json({ error: "Failed to reach Space Intelligence module." });
     }
 });
 
@@ -809,7 +881,7 @@ io.on('connection', (socket) => {
 
     socket.on('send_message', (data) => {
         // data: { roomId, sender, text, timestamp }
-        io.to(data.roomId).emit('receive_message', data);
+        io.to(data.roomId).emit('receive_message', { ...data, senderId: socket.id });
     });
 
     // WebRTC Logic (Existing)

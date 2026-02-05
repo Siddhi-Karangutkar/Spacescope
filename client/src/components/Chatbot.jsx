@@ -18,6 +18,7 @@ const Chatbot = () => {
     const [messages, setMessages] = useState([
         { sender: 'bot', text: "Greetings! I am your Cosmic Assistant. 🌌" }
     ]);
+    const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef(null);
 
     const scrollToBottom = () => {
@@ -26,29 +27,37 @@ const Chatbot = () => {
 
     useEffect(scrollToBottom, [messages]);
 
-    const handleSend = (e) => {
+    const handleSend = async (e) => {
         e.preventDefault();
-        if (!input.trim()) return;
+        if (!input.trim() || isTyping) return;
 
-        // User Message
-        const userMsg = { sender: 'user', text: input };
+        const userMessage = input.trim();
+        const userMsg = { sender: 'user', text: userMessage };
         setMessages(prev => [...prev, userMsg]);
         setInput("");
+        setIsTyping(true);
 
-        // Simple Keyword Logic
-        setTimeout(() => {
-            let reply = SYSTEM_RESPONSES.default;
-            const lowerInput = userMsg.text.toLowerCase();
+        try {
+            const res = await fetch('http://localhost:5002/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: userMessage,
+                    history: messages.slice(-5) // Send last 5 messages for context
+                })
+            });
 
-            if (lowerInput.includes('hello') || lowerInput.includes('hi')) reply = SYSTEM_RESPONSES.greetings[Math.floor(Math.random() * 3)];
-            else if (lowerInput.includes('weather') || lowerInput.includes('solar')) reply = SYSTEM_RESPONSES.weather;
-            else if (lowerInput.includes('storm') || lowerInput.includes('danger')) reply = SYSTEM_RESPONSES.storm;
-            else if (lowerInput.includes('asteroid') || lowerInput.includes('rock')) reply = SYSTEM_RESPONSES.asteroid;
-            else if (lowerInput.includes('mission') || lowerInput.includes('launch')) reply = SYSTEM_RESPONSES.mission;
-            else if (lowerInput.includes('earth') || lowerInput.includes('local')) reply = SYSTEM_RESPONSES.earth;
-
-            setMessages(prev => [...prev, { sender: 'bot', text: reply }]);
-        }, 600);
+            const data = await res.json();
+            if (res.ok) {
+                setMessages(prev => [...prev, { sender: 'bot', text: data.text }]);
+            } else {
+                setMessages(prev => [...prev, { sender: 'bot', text: "Signal lost. Please retry your transmission." }]);
+            }
+        } catch (err) {
+            setMessages(prev => [...prev, { sender: 'bot', text: "Systems offline. Connection to Command Center failed." }]);
+        } finally {
+            setIsTyping(false);
+        }
     };
 
     return (
@@ -81,6 +90,14 @@ const Chatbot = () => {
                                 <div className="bubble">{msg.text}</div>
                             </div>
                         ))}
+                        {isTyping && (
+                            <div className="message bot">
+                                <Bot size={16} className="bot-icon" />
+                                <div className="bubble typing">
+                                    <span></span><span></span><span></span>
+                                </div>
+                            </div>
+                        )}
                         <div ref={messagesEndRef} />
                     </div>
 

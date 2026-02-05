@@ -91,6 +91,11 @@ class EmailService {
         return this.sendEmail(subscriber.email, subject, html, subscriber.unsubscribe_token);
     }
 
+    async sendInstructorApprovalEmail(email, name, accessCode) {
+        const html = templates.instructorApproval({ name, accessCode });
+        return this.sendEmail(email, '🌌 Commission Approved: Your Instructor Access Code', html);
+    }
+
     async broadcastNotification(notification, data = {}) {
         try {
             // Get all active subscribers

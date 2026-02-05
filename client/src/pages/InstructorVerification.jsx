@@ -35,7 +35,9 @@ const InstructorVerification = ({ isEmbedded = false, applicantData = null, onAc
         name: applicantData.fullName,
         applicantId: `INST-${applicantData.id.toString().slice(-4)}`,
         submittedAt: new Date(applicantData.appliedAt).toLocaleString(),
-        aiScore: 92, // Simulated AI Score for new applicants
+        aiScore: applicantData.aiScore || 0,
+        aiRemarks: applicantData.aiRemarks || '',
+        aiStatus: applicantData.aiStatus || 'PENDING',
         email: applicantData.email,
         specialization: applicantData.specialization,
         bio: applicantData.bio
@@ -138,7 +140,7 @@ const InstructorVerification = ({ isEmbedded = false, applicantData = null, onAc
             }
 
             setChecklistState(newChecklist);
-            setTrustScore(prev => Math.min(98, prev + scoreBoost));
+            setTrustScore(instructorData.aiScore); // Use actual AI score
             setIsAnalyzing(false);
             setIsOcrProcessing(false);
         };
@@ -305,12 +307,19 @@ const InstructorVerification = ({ isEmbedded = false, applicantData = null, onAc
                             <h3>AI Trust Score</h3>
                             <p>Global space-identity match: {trustScore > 80 ? 'HIGH CONFIDENCE' : 'ANALYZING'}</p>
                             <div className="ai-analysis-log glass-panel">
-                                {analysisLogs.map((log, i) => (
-                                    <div key={i} className={`log-entry ${log.color || ''}`}>
-                                        <span className="log-time">{log.time}</span>
-                                        <span className="log-msg">{log.msg}</span>
+                                {instructorData.aiRemarks ? instructorData.aiRemarks.split('|').map((log, i) => (
+                                    <div key={i} className="log-entry">
+                                        <span className="log-time">AI INSIGHT</span>
+                                        <span className="log-msg">{log.trim()}</span>
                                     </div>
-                                ))}
+                                )) : (
+                                    analysisLogs.map((log, i) => (
+                                        <div key={i} className={`log-entry ${log.color || ''}`}>
+                                            <span className="log-time">{log.time}</span>
+                                            <span className="log-msg">{log.msg}</span>
+                                        </div>
+                                    ))
+                                )}
                                 {isAnalyzing && <div className="log-entry pulse">Scanning...</div>}
                             </div>
                         </div>

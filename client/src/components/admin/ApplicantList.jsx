@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { UserCheck, ShieldClose, Clock, User, Mail, GraduationCap } from 'lucide-react';
+import './ApplicantList.css';
 
 const ApplicantList = ({ onVerify }) => {
     const [applicants, setApplicants] = useState([]);
@@ -23,6 +24,9 @@ const ApplicantList = ({ onVerify }) => {
                 certificate: app.certificate,
                 idCard: app.id_card,
                 status: app.status,
+                aiStatus: app.ai_status,
+                aiScore: app.ai_score,
+                aiRemarks: app.ai_remarks,
                 appliedAt: app.applied_at
             }));
             setApplicants(mapped);
@@ -72,6 +76,13 @@ const ApplicantList = ({ onVerify }) => {
                                 <UserCheck size={16} />
                             </button>
                         </div>
+
+                        <div className="applicant-ai-badge">
+                            <div className={`ai-pill ${app.aiStatus.toLowerCase()}`}>
+                                AI: {app.aiStatus} ({app.aiScore}%)
+                            </div>
+                            {app.aiRemarks && <p className="ai-remarks" title={app.aiRemarks}>{app.aiRemarks}</p>}
+                        </div>
                     </div>
                 )) : (
                     <div className="empty-state">
@@ -81,20 +92,6 @@ const ApplicantList = ({ onVerify }) => {
                 )}
             </div>
 
-            <style jsx>{`
-                .applicant-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 2rem; margin-top: 2rem; }
-                .applicant-card { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; position: relative; overflow: hidden; }
-                .applicant-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--accent-primary); }
-                .applicant-main { display: flex; gap: 1.5rem; align-items: center; }
-                .applicant-token { width: 60px; height: 60px; border-radius: 50%; background: rgba(34, 166, 179, 0.1); display: flex; align-items: center; justify-content: center; border: 1px solid rgba(34, 166, 179, 0.2); }
-                .applicant-meta h3 { font-size: 1.25rem; color: #fff; margin-bottom: 0.5rem; }
-                .meta-row { display: flex; align-items: center; gap: 8px; color: #888; font-size: 0.85rem; margin-bottom: 4px; }
-                .applicant-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem; }
-                .applied-at { display: flex; align-items: center; gap: 6px; color: #555; font-size: 0.75rem; font-family: monospace; }
-                .verify-button { background: var(--accent-primary); color: #000; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
-                .verify-button:hover { box-shadow: 0 0 15px var(--accent-primary); transform: translateY(-1px); }
-                .empty-state { text-align: center; padding: 100px; grid-column: 1 / -1; color: #444; }
-            `}</style>
         </div>
     );
 };
