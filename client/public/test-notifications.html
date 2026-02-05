@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Test - SpaceScope</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #0f0f23;
+            color: white;
+        }
+        .test-box {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin: 10px 0;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        .success { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .error { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .info { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        h1 { color: #667eea; }
+        code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔔 Notification System Test</h1>
+    
+    <div class="test-box">
+        <h2>Step 1: Check Browser Support</h2>
+        <div id="support-status"></div>
+        <button onclick="checkSupport()">Check Support</button>
+    </div>
+
+    <div class="test-box">
+        <h2>Step 2: Request Permission</h2>
+        <div id="permission-status"></div>
+        <button onclick="requestPermission()">Request Permission</button>
+    </div>
+
+    <div class="test-box">
+        <h2>Step 3: Show Test Notification</h2>
+        <div id="notification-status"></div>
+        <button onclick="showTestNotification()">Show Test Notification</button>
+    </div>
+
+    <div class="test-box">
+        <h2>📝 Instructions</h2>
+        <ol>
+            <li>Click "Check Support" to verify your browser supports notifications</li>
+            <li>Click "Request Permission" and allow notifications when prompted</li>
+            <li>Click "Show Test Notification" to see a desktop notification</li>
+            <li>If you see the notification pop up → <strong>Everything works!</strong> ✅</li>
+        </ol>
+    </div>
+
+    <script>
+        function checkSupport() {
+            const statusDiv = document.getElementById('support-status');
+            
+            if ('Notification' in window) {
+                statusDiv.innerHTML = '<div class="status success">✅ Browser supports notifications!</div>';
+                statusDiv.innerHTML += '<div class="status info">Current permission: <code>' + Notification.permission + '</code></div>';
+            } else {
+                statusDiv.innerHTML = '<div class="status error">❌ Browser does not support notifications</div>';
+            }
+        }
+
+        async function requestPermission() {
+            const statusDiv = document.getElementById('permission-status');
+            
+            if (!('Notification' in window)) {
+                statusDiv.innerHTML = '<div class="status error">❌ Notifications not supported</div>';
+                return;
+            }
+
+            try {
+                const permission = await Notification.requestPermission();
+                
+                if (permission === 'granted') {
+                    statusDiv.innerHTML = '<div class="status success">✅ Permission granted! You can now receive notifications.</div>';
+                } else if (permission === 'denied') {
+                    statusDiv.innerHTML = '<div class="status error">❌ Permission denied. Please reset in browser settings.</div>';
+                } else {
+                    statusDiv.innerHTML = '<div class="status error">⚠️ Permission dismissed. Try again.</div>';
+                }
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="status error">❌ Error: ' + error.message + '</div>';
+            }
+        }
+
+        function showTestNotification() {
+            const statusDiv = document.getElementById('notification-status');
+            
+            if (!('Notification' in window)) {
+                statusDiv.innerHTML = '<div class="status error">❌ Notifications not supported</div>';
+                return;
+            }
+
+            if (Notification.permission !== 'granted') {
+                statusDiv.innerHTML = '<div class="status error">❌ Permission not granted. Click "Request Permission" first.</div>';
+                return;
+            }
+
+            try {
+                const notification = new Notification('🚀 Test Notification', {
+                    body: 'If you see this, notifications are working perfectly!',
+                    icon: '/favicon.ico',
+                    badge: '/favicon.ico',
+                    tag: 'test-notification',
+                    requireInteraction: false
+                });
+
+                notification.onclick = function() {
+                    console.log('Notification clicked!');
+                    window.focus();
+                    notification.close();
+                };
+
+                statusDiv.innerHTML = '<div class="status success">✅ Notification sent! Check your desktop/notification center.</div>';
+                
+                setTimeout(() => {
+                    statusDiv.innerHTML += '<div class="status info">💡 If you didn\'t see it, check:<br>- Windows: Bottom right corner<br>- Mac: Top right corner<br>- Your notification center</div>';
+                }, 2000);
+
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="status error">❌ Error: ' + error.message + '</div>';
+            }
+        }
+
+        // Auto-check support on load
+        window.onload = checkSupport;
+    </script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Notification Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 100px auto;
+            padding: 20px;
+            background: #1a1a2e;
+            color: white;
+            text-align: center;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .success {
+            color: #10b981;
+        }
+
+        .error {
+            color: #ef4444;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔔 Quick Notification Test</h1>
+    <p>This is the simplest possible test</p>
+
+    <div id="status" class="status">Click the button below</div>
+
+    <button onclick="testNotification()">Test Notification</button>
+
+    <script>
+        async function testNotification() {
+            const statusDiv = document.getElementById('status');
+
+            console.log('=== NOTIFICATION TEST START ===');
+            console.log('1. Checking support...');
+
+            if (!('Notification' in window)) {
+                statusDiv.innerHTML = '<span class="error">❌ Notifications not supported</span>';
+                console.error('Notifications not supported');
+                return;
+            }
+
+            console.log('2. Current permission:', Notification.permission);
+            statusDiv.innerHTML = 'Current permission: ' + Notification.permission;
+
+            if (Notification.permission === 'granted') {
+                console.log('3. Permission already granted, showing notification...');
+                showTestNotification();
+            } else if (Notification.permission !== 'denied') {
+                console.log('3. Requesting permission...');
+                statusDiv.innerHTML = 'Requesting permission...';
+
+                const permission = await Notification.requestPermission();
+                console.log('4. Permission result:', permission);
+
+                if (permission === 'granted') {
+                    console.log('5. Permission granted! Showing notification...');
+                    showTestNotification();
+                } else {
+                    statusDiv.innerHTML = '<span class="error">❌ Permission denied</span>';
+                    console.error('Permission denied');
+                }
+            } else {
+                statusDiv.innerHTML = '<span class="error">❌ Permission previously denied. Reset in browser settings.</span>';
+                console.error('Permission previously denied');
+            }
+        }
+
+        function showTestNotification() {
+            const statusDiv = document.getElementById('status');
+
+            try {
+                console.log('Creating notification...');
+                const notification = new Notification('🚀 Test Successful!', {
+                    body: 'If you see this, notifications are working!',
+                    icon: '/favicon.ico',
+                    requireInteraction: false
+                });
+
+                notification.onshow = () => {
+                    console.log('✅ Notification shown!');
+                    statusDiv.innerHTML = '<span class="success">✅ Notification shown! Check your screen.</span>';
+                };
+
+                notification.onerror = (error) => {
+                    console.error('❌ Notification error:', error);
+                    statusDiv.innerHTML = '<span class="error">❌ Error showing notification</span>';
+                };
+
+                notification.onclick = () => {
+                    console.log('Notification clicked');
+                    window.focus();
+                    notification.close();
+                };
+
+                console.log('Notification object created:', notification);
+
+            } catch (error) {
+                console.error('❌ Error:', error);
+                statusDiv.innerHTML = '<span class="error">❌ Error: ' + error.message + '</span>';
+            }
+        }
+
+        // Auto-check permission on load
+        window.onload = () => {
+            console.log('Page loaded. Permission:', Notification.permission);
+            document.getElementById('status').innerHTML =
+                'Permission: <strong>' + Notification.permission + '</strong>';
+        };
+    </script>
+</body>
+
+</html>

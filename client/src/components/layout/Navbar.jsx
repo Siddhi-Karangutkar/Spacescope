@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Sun, Moon, Rocket, Telescope, Menu, X } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import AdminLogin from './AdminLogin';
+import NotificationBell from '../notifications/NotificationBell';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -55,6 +56,8 @@ const Navbar = () => {
                     <Link to="/learn" className="nav-link">Learn</Link> */}
                     <Link to="/instructor-connect" className="nav-link" onClick={() => setIsMobileOpen(false)}>Connect</Link>
                     <Link to="/earth-link" className="nav-link highlight" onClick={() => setIsMobileOpen(false)}>EarthLink</Link>
+
+                    <NotificationBell />
 
                     <button onClick={toggleTheme} className="theme-toggle" aria-label="Toggle Theme">
                         {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
