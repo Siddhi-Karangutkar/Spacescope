@@ -8,7 +8,7 @@ const Dashboard = () => {
             <h1>SpaceScope Dashboard</h1>
             <p>Welcome to your cosmic control center. Modules loading...</p>
             {/* Placeholder for future widgets */}
-            <div className="dashboard-grid">
+            <div className="modules-grid">
                 {/* NEW FEATURE: Space Risk */}
                 <div className="glass-panel widget weather-summary-widget" style={{ borderColor: '#22A6B3', boxShadow: '0 0 10px rgba(34, 166, 179, 0.1)' }}>
                     <h3>Space Risk Scanner</h3>

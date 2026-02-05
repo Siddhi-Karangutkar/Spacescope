@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar
 } from 'recharts';
@@ -25,370 +25,59 @@ import './ClimateAgriculture.css';
 
 // --- DATA CONSTANTS ---
 
-const MOCK_REGIONS = [
-    // --- ASIA ---
-    {
-        id: 'punjab-in',
-        name: 'Punjab, India',
-        lat: 30.900965,
-        lng: 75.857275,
-        stress: 'high',
-        risk: 'Groundwater Depletion',
-        crops: ['Wheat', 'Rice', 'Sugarcane'],
-        details: { soilType: 'Alluvial', avgRainfall: '650mm', growingSeason: 'Year-round' }
-    },
-    {
-        id: 'mekong-vn',
-        name: 'Mekong Delta, Vietnam',
-        lat: 10.0371,
-        lng: 105.7882,
-        stress: 'medium',
-        risk: 'Saline Intrusion',
-        crops: ['Rice', 'Fruit', 'Coconut'],
-        details: { soilType: 'Alluvial/Acid Sulfate', avgRainfall: '1800mm', growingSeason: 'Year-round' }
-    },
-    {
-        id: 'hokkaido-jp',
-        name: 'Hokkaido, Japan',
-        lat: 43.0642,
-        lng: 141.3469,
-        stress: 'low',
-        risk: 'Cold Snap Damage',
-        crops: ['Potatoes', 'Wheat', 'Dairy'],
-        details: { soilType: 'Volcanic Ash', avgRainfall: '1100mm', growingSeason: 'May - Oct' }
-    },
-    {
-        id: 'jiangsu-cn',
-        name: 'Jiangsu, China',
-        lat: 32.0617,
-        lng: 118.7632,
-        stress: 'low',
-        risk: 'Urban Encroachment',
-        crops: ['Rice', 'Wheat', 'Rapeseed'],
-        details: { soilType: 'Paddy Soil', avgRainfall: '1000mm', growingSeason: 'Year-round' }
-    },
-    {
-        id: 'sindh-pk',
-        name: 'Sindh, Pakistan',
-        lat: 25.8943,
-        lng: 68.5247,
-        stress: 'high',
-        risk: 'Extreme Heat & Drought',
-        crops: ['Cotton', 'Wheat', 'Dates'],
-        details: { soilType: 'Silt/Clay', avgRainfall: '150mm', growingSeason: 'Year-round' }
-    },
-    {
-        id: 'isaan-th',
-        name: 'Isaan Region, Thailand',
-        lat: 15.1258,
-        lng: 103.1674,
-        stress: 'medium',
-        risk: 'Erratic Rainfall',
-        crops: ['Jasmine Rice', 'Cassava'],
-        details: { soilType: 'Sandy Loam', avgRainfall: '1300mm', growingSeason: 'Jun - Dec' }
-    },
-    {
-        id: 'java-id',
-        name: 'Central Java, Indonesia',
-        lat: -7.1509,
-        lng: 110.1403,
-        stress: 'low',
-        risk: 'Volcanic Ash Fall',
-        crops: ['Rice', 'Coffee', 'Tobacco'],
-        details: { soilType: 'Andisols', avgRainfall: '2500mm', growingSeason: 'Year-round' }
-    },
+// --- PROCEDURAL DATA GENERATION ---
 
-    // --- NORTH AMERICA ---
-    {
-        id: 'california-us',
-        name: 'California (Central Valley), USA',
-        lat: 36.7783,
-        lng: -119.4179,
-        stress: 'high',
-        risk: 'Drought & Water Scarcity',
-        crops: ['Almonds', 'Grapes', 'Tomatoes'],
-        details: { soilType: 'Loam', avgRainfall: '250mm', growingSeason: 'Feb - Nov' }
-    },
-    {
-        id: 'iowa-us',
-        name: 'Iowa, USA',
-        lat: 41.8780,
-        lng: -93.0977,
-        stress: 'low',
-        risk: 'Storm Damage',
-        crops: ['Corn', 'Soybeans'],
-        details: { soilType: 'Glacial Till', avgRainfall: '860mm', growingSeason: 'May - Oct' }
-    },
-    {
-        id: 'saskatchewan-ca',
-        name: 'Saskatchewan, Canada',
-        lat: 52.9399,
-        lng: -106.4509,
-        stress: 'medium',
-        risk: 'Early Frost',
-        crops: ['Canola', 'Wheat', 'Lentils'],
-        details: { soilType: 'Chernozem', avgRainfall: '450mm', growingSeason: 'May - Sep' }
-    },
-    {
-        id: 'sonora-mx',
-        name: 'Sonora, Mexico',
-        lat: 29.0892,
-        lng: -110.9613,
-        stress: 'high',
-        risk: 'Desertification',
-        crops: ['Wheat', 'Grapes', 'Asparagus'],
-        details: { soilType: 'Aridisol', avgRainfall: '200mm', growingSeason: 'Nov - May' }
-    },
+const generateAgriData = (lat, lng, name) => {
+    const absLat = Math.abs(lat);
+    let stress = 'low';
+    let risk = 'Stable Conditions';
+    let crops = ['Wheat', 'Barley'];
+    let details = { soilType: 'Loam', avgRainfall: '800mm', growingSeason: 'Apr - Oct' };
 
-    // --- SOUTH AMERICA ---
-    {
-        id: 'mato-grosso-br',
-        name: 'Mato Grosso, Brazil',
-        lat: -12.6819,
-        lng: -56.9211,
-        stress: 'low',
-        risk: 'Deforestation Heat Stress',
-        crops: ['Soybean', 'Corn', 'Cotton'],
-        details: { soilType: 'Ferralsol', avgRainfall: '1800mm', growingSeason: 'Oct - May' }
-    },
-    {
-        id: 'pampas-ar',
-        name: 'Pampas, Argentina',
-        lat: -34.6037,
-        lng: -58.3816,
-        stress: 'medium',
-        risk: 'Flood & Soil Erosion',
-        crops: ['Soybean', 'Maize', 'Wheat'],
-        details: { soilType: 'Mollisol', avgRainfall: '1000mm', growingSeason: 'Sep - Apr' }
-    },
-    {
-        id: 'valle-central-cl',
-        name: 'Central Valley, Chile',
-        lat: -35.6751,
-        lng: -71.5430,
-        stress: 'medium',
-        risk: 'Glacial Melt Reduction',
-        crops: ['Grapes', 'Apples', 'Cherries'],
-        details: { soilType: 'Aluvial', avgRainfall: '500mm', growingSeason: 'Sep - May' }
-    },
-
-    // --- EUROPE ---
-    {
-        id: 'ukraine-steppe',
-        name: 'Steppe Zone, Ukraine',
-        lat: 48.3794,
-        lng: 31.1656,
-        stress: 'medium',
-        risk: 'Dry Spell Volatility',
-        crops: ['Sunflower', 'Wheat', 'Corn'],
-        details: { soilType: 'Chernozem', avgRainfall: '550mm', growingSeason: 'Apr - Oct' }
-    },
-    {
-        id: 'bordeaux-fr',
-        name: 'Bordeaux, France',
-        lat: 44.8378,
-        lng: -0.5792,
-        stress: 'medium',
-        risk: 'Heatwave (Vines)',
-        crops: ['Grapes (Wine)'],
-        details: { soilType: 'Limestone/Gravel', avgRainfall: '900mm', growingSeason: 'Mar - Sep' }
-    },
-    {
-        id: 'andalusia-es',
-        name: 'Andalusia, Spain',
-        lat: 37.3891,
-        lng: -5.9845,
-        stress: 'high',
-        risk: 'Extreme Drought',
-        crops: ['Olives', 'Citrus', 'Strawberries'],
-        details: { soilType: 'Calcareous', avgRainfall: '500mm', growingSeason: 'Year-round' }
-    },
-    {
-        id: 'puglia-it',
-        name: 'Puglia, Italy',
-        lat: 41.1259,
-        lng: 16.8667,
-        stress: 'medium',
-        risk: 'Xylella Fastidiosa (Outbreak)',
-        crops: ['Olives', 'Durum Wheat'],
-        details: { soilType: 'Terra Rossa', avgRainfall: '600mm', growingSeason: 'Year-round' }
-    },
-    {
-        id: 'bavaria-de',
-        name: 'Bavaria, Germany',
-        lat: 48.3953,
-        lng: 11.4333,
-        stress: 'low',
-        risk: 'Flash Flooding',
-        crops: ['Hops', 'Barley', 'Wheat'],
-        details: { soilType: 'Luvisol', avgRainfall: '850mm', growingSeason: 'Apr - Oct' }
-    },
-
-    // --- AFRICA ---
-    {
-        id: 'nile-eg',
-        name: 'Nile Delta, Egypt',
-        lat: 30.5852,
-        lng: 31.5035,
-        stress: 'medium',
-        risk: 'Salinity Intrusion',
-        crops: ['Cotton', 'Rice', 'Citrus'],
-        details: { soilType: 'Heavy Clay', avgRainfall: '150mm', growingSeason: 'Year-round' }
-    },
-    {
-        id: 'western-cape-za',
-        name: 'Western Cape, South Africa',
-        lat: -33.9249,
-        lng: 18.4241,
-        stress: 'high',
-        risk: 'Water Scarcity ("Day Zero")',
-        crops: ['Grapes', 'Citrus', 'Wheat'],
-        details: { soilType: 'Sandy Loam', avgRainfall: '500mm', growingSeason: 'May - Oct' }
-    },
-    {
-        id: 'rift-valley-ke',
-        name: 'Rift Valley, Kenya',
-        lat: -0.2833,
-        lng: 36.0667,
-        stress: 'medium',
-        risk: 'Locust Infestation',
-        crops: ['Maize', 'Tea', 'Flowers'],
-        details: { soilType: 'Volcanic Soil', avgRainfall: '1200mm', growingSeason: 'Mar - Nov' }
-    },
-    {
-        id: 'kano-ng',
-        name: 'Kano State, Nigeria',
-        lat: 12.0022,
-        lng: 8.5920,
-        stress: 'medium',
-        risk: 'Harmattan Dust & Heat',
-        crops: ['Sorghum', 'Millet', 'Groundnuts'],
-        details: { soilType: 'Sandy Soil', avgRainfall: '800mm', growingSeason: 'Jun - Sep' }
-    },
-    {
-        id: 'high-atlas-ma',
-        name: 'High Atlas, Morocco',
-        lat: 31.2500,
-        lng: -7.0000,
-        stress: 'high',
-        risk: 'Soil Erosion',
-        crops: ['Almonds', 'Olives', 'Barely'],
-        details: { soilType: 'Lithosols', avgRainfall: '300mm', growingSeason: 'Oct - May' }
-    },
-
-    // --- OCEANIA ---
-    {
-        id: 'murray-au',
-        name: 'Murray-Darling Basin, AU',
-        lat: -34.0000,
-        lng: 141.0000,
-        stress: 'high',
-        risk: 'Severe Drought',
-        crops: ['Wheat', 'Barley', 'Grapes'],
-        details: { soilType: 'Vertisol', avgRainfall: '480mm', growingSeason: 'Apr - Nov' }
-    },
-    {
-        id: 'canterbury-nz',
-        name: 'Canterbury Plains, NZ',
-        lat: -43.5321,
-        lng: 172.6362,
-        stress: 'low',
-        risk: 'Nitrate Leaching',
-        crops: ['Dairy', 'Wheat', 'Seeds'],
-        details: { soilType: 'Brown Soil', avgRainfall: '650mm', growingSeason: 'Sep - May' }
-    },
-    // --- ADDITIONAL GLOBAL REGIONS ---
-    {
-        id: 'central-valley-cr',
-        name: 'Central Valley, Costa Rica',
-        lat: 9.9281,
-        lng: -84.0907,
-        stress: 'low',
-        risk: 'Volcanic Activity',
-        crops: ['Coffee', 'Bananas', 'Sugar'],
-        details: { soilType: 'Volcanic Ash', avgRainfall: '2000mm', growingSeason: 'Year-round' }
-    },
-    {
-        id: 'al-ahsa-sa',
-        name: 'Al-Ahsa Oasis, Saudi Arabia',
-        lat: 25.3833,
-        lng: 49.5833,
-        stress: 'high',
-        risk: 'Sand Encroachment',
-        crops: ['Dates', 'Rice', 'Alfalfa'],
-        details: { soilType: 'Sandy Loam', avgRainfall: '80mm', growingSeason: 'Year-round' }
-    },
-    {
-        id: 'hedmark-no',
-        name: 'Hedmark, Norway',
-        lat: 60.7945,
-        lng: 11.0678,
-        stress: 'low',
-        risk: 'Short Growing Season',
-        crops: ['Wheat', 'Barley', 'Potato'],
-        details: { soilType: 'Moraine', avgRainfall: '600mm', growingSeason: 'May - Aug' }
-    },
-    {
-        id: 'turkistan-kz',
-        name: 'Turkistan, Kazakhstan',
-        lat: 43.3000,
-        lng: 68.2000,
-        stress: 'high',
-        risk: 'Water Diversion (Aral Sea)',
-        crops: ['Cotton', 'Wheat', 'Rice'],
-        details: { soilType: 'Sierozem', avgRainfall: '250mm', growingSeason: 'Apr - Oct' }
-    },
-    {
-        id: 'sidamo-et',
-        name: 'Sidamo Region, Ethiopia',
-        lat: 6.7000,
-        lng: 38.5000,
-        stress: 'medium',
-        risk: 'Soil Acidification',
-        crops: ['Coffee', 'Enset', 'Maize'],
-        details: { soilType: 'Nitisols', avgRainfall: '1200mm', growingSeason: 'Mar - Oct' }
-    },
-    {
-        id: 'central-luzon-ph',
-        name: 'Central Luzon, Philippines',
-        lat: 15.4828,
-        lng: 120.7120,
-        stress: 'medium',
-        risk: 'Typhoon Damage',
-        crops: ['Rice', 'Corn', 'Sugar'],
-        details: { soilType: 'Alluvial', avgRainfall: '2000mm', growingSeason: 'Year-round' }
-    },
-    {
-        id: 'mazovia-pl',
-        name: 'Mazovia, Poland',
-        lat: 52.2297,
-        lng: 21.0122,
-        stress: 'low',
-        risk: 'Late Spring Frost',
-        crops: ['Apples', 'Sugar Beets', 'Rye'],
-        details: { soilType: 'Podzols', avgRainfall: '550mm', growingSeason: 'Apr - Oct' }
-    },
-    {
-        id: 'charentes-fr',
-        name: 'Charentes, France',
-        lat: 45.7500,
-        lng: 0.1667,
-        stress: 'medium',
-        risk: 'Drought Impact (Cognac)',
-        crops: ['Grapes', 'Sunflower', 'Corn'],
-        details: { soilType: 'Clay-Limestone', avgRainfall: '800mm', growingSeason: 'Mar - Sep' }
-    },
-    {
-        id: 'minnas-gerais-br',
-        name: 'Minas Gerais, Brazil',
-        lat: -18.5122,
-        lng: -44.5550,
-        stress: 'medium',
-        risk: 'Frost in Highlands',
-        crops: ['Coffee', 'Corn', 'Dairy'],
-        details: { soilType: 'Latosols', avgRainfall: '1400mm', growingSeason: 'Oct - Mar' }
+    // Tropical Zone
+    if (absLat < 23.5) {
+        stress = Math.random() > 0.6 ? 'high' : 'medium';
+        risk = lat > 0 ? 'Monsoon Flooding' : 'Extreme Heat';
+        crops = ['Rice', 'Sugarcane', 'Coconut', 'Coffee'];
+        details = { soilType: 'Alluvial', avgRainfall: '1500mm+', growingSeason: 'Year-round' };
     }
-];
+    // Arid/Temperate Warm
+    else if (absLat < 35) {
+        stress = Math.random() > 0.5 ? 'high' : 'medium';
+        risk = 'Water Scarcity & Drought';
+        crops = ['Cotton', 'Grapes', 'Olives', 'Citrus'];
+        details = { soilType: 'Sandy Loam', avgRainfall: '400mm', growingSeason: 'Feb - Nov' };
+    }
+    // Temperate Cold
+    else {
+        stress = Math.random() > 0.8 ? 'medium' : 'low';
+        risk = 'Early Frost / Cold Snap';
+        crops = ['Potatoes', 'Wheat', 'Rapeseed', 'Apples'];
+        details = { soilType: 'Chernozem', avgRainfall: '600mm', growingSeason: 'May - Sep' };
+    }
+
+    return {
+        id: `geo-${lat}-${lng}`,
+        name: name,
+        lat: parseFloat(lat),
+        lng: parseFloat(lng),
+        stress,
+        risk,
+        crops,
+        details
+    };
+};
+
+const INITIAL_REGION = {
+    id: 'mumbai-in',
+    name: 'Mumbai, India',
+    lat: 19.0760,
+    lng: 72.8777,
+    stress: 'medium',
+    risk: 'Monsoon Flooding',
+    crops: ['Rice', 'Vegetables', 'Coconut'],
+    details: { soilType: 'Coastal Alluvial', avgRainfall: '2200mm', growingSeason: 'Year-round' }
+};
 
 // Generate somewhat realistic looking weather trends based on latitude roughly
 const generateWeatherData = (lat) => {
@@ -440,17 +129,71 @@ const StressGauge = ({ stress }) => {
 };
 
 const ClimateAgriculture = () => {
-    const [selectedRegion, setSelectedRegion] = useState(MOCK_REGIONS[0]);
-    const [weatherData, setWeatherData] = useState(generateWeatherData(MOCK_REGIONS[0].lat));
+    const [selectedRegion, setSelectedRegion] = useState(INITIAL_REGION);
+    const [searchTerm, setSearchTerm] = useState(INITIAL_REGION.name);
+    const [filteredRegions, setFilteredRegions] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [weatherData, setWeatherData] = useState(generateWeatherData(INITIAL_REGION.lat));
+    const searchRef = useRef(null);
+    const debounceTimer = useRef(null);
 
     useEffect(() => {
         // Update data when region changes (simulating API fetch)
         setWeatherData(generateWeatherData(selectedRegion.lat));
+        setSearchTerm(selectedRegion.name);
     }, [selectedRegion]);
 
-    const handleRegionChange = (e) => {
-        const region = MOCK_REGIONS.find(r => r.id === e.target.value);
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (searchRef.current && !searchRef.current.contains(event.target)) {
+                setShowSuggestions(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleSearchChange = (e) => {
+        const value = e.target.value;
+        setSearchTerm(value);
+
+        if (debounceTimer.current) clearTimeout(debounceTimer.current);
+
+        if (value.trim().length > 2) {
+            setIsLoading(true);
+            debounceTimer.current = setTimeout(async () => {
+                try {
+                    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(value)}&addressdetails=1&limit=5`);
+                    const data = await response.json();
+
+                    const suggestions = data.map(item => ({
+                        id: item.place_id,
+                        name: item.display_name,
+                        lat: parseFloat(item.lat),
+                        lng: parseFloat(item.lon),
+                        // Add procedural agri data instantly
+                        ...generateAgriData(item.lat, item.lon, item.display_name)
+                    }));
+
+                    setFilteredRegions(suggestions);
+                    setShowSuggestions(true);
+                } catch (error) {
+                    console.error("Geocoding failed:", error);
+                } finally {
+                    setIsLoading(false);
+                }
+            }, 600);
+        } else {
+            setFilteredRegions([]);
+            setShowSuggestions(false);
+        }
+    };
+
+    const handleSuggestionClick = (region) => {
         setSelectedRegion(region);
+        setSearchTerm(region.name);
+        setShowSuggestions(false);
     };
 
     return (
@@ -466,20 +209,37 @@ const ClimateAgriculture = () => {
                 </div>
 
                 <div className="region-selector-container">
-                    <label className="region-label">Select Target Zone</label>
-                    <select
-                        className="region-selector"
-                        value={selectedRegion.id}
-                        onChange={handleRegionChange}
-                    >
-                        {MOCK_REGIONS.map(r => (
-                            <option key={r.id} value={r.id}>{r.name}</option>
-                        ))}
-                    </select>
+                    <label className="region-label">Search Target Zone</label>
+                    <div className="autocomplete-wrapper" ref={searchRef}>
+                        <input
+                            type="text"
+                            className="region-selector-input"
+                            value={searchTerm}
+                            onChange={handleSearchChange}
+                            onFocus={() => searchTerm.length > 0 && setShowSuggestions(true)}
+                            placeholder="Search globally (e.g. London, Tokyo)..."
+                        />
+                        {isLoading && <div className="search-loader">Scanning Global Nodes...</div>}
+                        {showSuggestions && filteredRegions.length > 0 && (
+                            <ul className="suggestions-list">
+                                {filteredRegions.map(r => (
+                                    <li
+                                        key={r.id}
+                                        onClick={() => handleSuggestionClick(r)}
+                                        className="suggestion-item"
+                                        title={r.name}
+                                    >
+                                        <div className="suggestion-name">{r.name}</div>
+                                        <div className="suggestion-risk">{r.risk}</div>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
                 </div>
             </header>
 
-            <div className="dashboard-grid">
+            <div className="climate-grid">
 
                 {/* Soil Moisture Map Card */}
                 <div className="dashboard-card map-card">
