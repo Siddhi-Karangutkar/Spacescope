@@ -4,32 +4,39 @@
     min-height: 100vh;
 }
 
-.dashboard-grid {
+.modules-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
+    gap: 2rem;
     margin-top: 2rem;
 }
 
-@media (max-width: 1100px) {
-    .dashboard-grid {
+@media (max-width: 1200px) {
+    .modules-grid {
         grid-template-columns: repeat(3, 1fr);
     }
 }
 
-@media (max-width: 800px) {
-    .dashboard-grid {
+@media (max-width: 992px) {
+    .modules-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
-@media (max-width: 500px) {
-    .dashboard-grid {
-        grid-template-columns: 1fr;
-    }
-
+@media (max-width: 768px) {
     .dashboard-container {
         padding: 80px 1rem 1rem;
+    }
+
+    .modules-grid {
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .modules-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
     }
 }
 
