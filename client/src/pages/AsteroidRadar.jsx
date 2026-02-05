@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Info, AlertCircle, Calendar, Target, Shield, Gauge, Move, Globe, Orbit, Zap, Share2, Rocket } from 'lucide-react';
+import { Search, Info, AlertCircle, Calendar, Target, Shield, Gauge, Move, Globe, Orbit, Zap, Share2, Rocket, Radar, Database, Scale } from 'lucide-react';
 import SmartTerm from '../components/SmartTerm';
 import './AsteroidRadar.css';
 
@@ -47,6 +47,8 @@ const AsteroidRadar = () => {
 
                     // Auto-select the closest asteroid
                     handleAsteroidClick(sorted[0]);
+                } else {
+                    setStats({ total: 0, hazardous: 0, closest: null, largest: null });
                 }
             } catch (err) {
                 console.warn("Asteroid Radar fetch failed, check server connection.");
@@ -56,11 +58,12 @@ const AsteroidRadar = () => {
         };
 
         fetchData();
-        const interval = setInterval(fetchData, 300000); // Refresh every 5 mins
+        const interval = setInterval(fetchData, 60000); // Refresh every 1 min for real-time monitoring
         return () => clearInterval(interval);
     }, []);
 
     const handleAsteroidClick = async (ast) => {
+        if (!ast) return;
         setSelectedAsteroid(ast);
         setLoadingDetails(true);
         try {
@@ -97,7 +100,7 @@ const AsteroidRadar = () => {
         <div className="asteroid-radar-container">
             <header className="radar-page-header">
                 <h1 className="page-title glow-text">
-                    <span className="text-gradient"><SmartTerm term="Asteroid" /></span> Radar
+                    <SmartTerm term="Asteroid" display={<span className="text-gradient">Asteroid</span>} /> Radar
                 </h1>
                 <div className="subtitle text-center text-secondary mb-8 -mt-6">
                     <SmartTerm term="NEO" display="Near-Earth Object" /> Surveillance Network
@@ -122,6 +125,7 @@ const AsteroidRadar = () => {
 
                         {/* Asteroid Dots */}
                         {asteroids.map((ast, idx) => {
+                            if (!ast.close_approach_data || ast.close_approach_data.length === 0) return null;
                             // Generate a stable psuedo-random angle based on ID
                             const seed = ast.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
                             const angle = (seed % 360) * (Math.PI / 180);
@@ -263,7 +267,7 @@ const AsteroidRadar = () => {
                 {/* 4. List View */}
                 < div className="glass-panel list-panel" >
                     <div className="section-header">
-                        <h2><SmartTerm term="Asteroid" /> Monitoring</h2>
+                        <h2><SmartTerm term="Asteroid" display={<span className="text-gradient">Asteroid</span>} /> Monitoring</h2>
                         <div className="discovery-stats">
                             <SmartTerm term="NEO" /> objects detected in proximity
                         </div>

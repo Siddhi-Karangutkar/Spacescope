@@ -10,6 +10,82 @@
     margin-bottom: 3rem;
     text-transform: uppercase;
     letter-spacing: 0.2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.page-title .smart-term {
+    display: inline;
+    border-bottom: none;
+}
+
+.loading-screen {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: var(--accent-primary);
+    background: #000;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    animation: pulse 2s infinite;
+}
+
+/* Utilities */
+.text-center {
+    text-align: center;
+}
+
+.text-secondary {
+    color: var(--text-secondary);
+}
+
+.mb-8 {
+    margin-bottom: 2rem;
+}
+
+.-mt-6 {
+    margin-top: -1.5rem;
+}
+
+.text-red-500 {
+    color: #ef4444;
+}
+
+.text-blue-400 {
+    color: #60a5fa;
+}
+
+.bg-red-900 {
+    background-color: #7f1d1d;
+}
+
+.text-red-100 {
+    color: #fee2e2;
+}
+
+.bg-green-900 {
+    background-color: #064e3b;
+}
+
+.text-green-100 {
+    color: #d1fae5;
+}
+
+.flex {
+    display: flex;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.gap-1 {
+    gap: 0.25rem;
 }
 
 .radar-grid {

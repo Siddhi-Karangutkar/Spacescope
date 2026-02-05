@@ -48,12 +48,12 @@ const Navbar = () => {
                     <Link to="/dashboard" className="nav-link" onClick={() => setIsMobileOpen(false)}>Dashboard</Link>
                     <Link to="/climate-agriculture" className="nav-link" onClick={() => setIsMobileOpen(false)}>Climate</Link>
                     <Link to="/career-path" className="nav-link" onClick={() => setIsMobileOpen(false)}>Career Path</Link>
-                    {/* <Link to="/community" className="nav-link">Crew Quarters</Link> */}
-                    {/* <Link to="/cosmic-weather" className="nav-link">Cosmic Weather</Link>
-                    <Link to="/space-events" className="nav-link">Space Events</Link>
-                    <Link to="/asteroid-radar" className="nav-link">Asteroid Radar</Link>
-                    <Link to="/missions" className="nav-link">Missions</Link>
-                    <Link to="/learn" className="nav-link">Learn</Link> */}
+                    {/* <Link to="/community" className="nav-link" onClick={() => setIsMobileOpen(false)}>Crew Quarters</Link> */}
+                    {/* <Link to="/cosmic-weather" className="nav-link" onClick={() => setIsMobileOpen(false)}>Cosmic Weather</Link>
+                    <Link to="/space-events" className="nav-link" onClick={() => setIsMobileOpen(false)}>Space Events</Link>
+                    <Link to="/asteroid-radar" className="nav-link" onClick={() => setIsMobileOpen(false)}>Asteroid Radar</Link>
+                    <Link to="/missions" className="nav-link" onClick={() => setIsMobileOpen(false)}>Missions</Link>
+                    <Link to="/learn" className="nav-link" onClick={() => setIsMobileOpen(false)}>Learn</Link> */}
                     <Link to="/instructor-connect" className="nav-link" onClick={() => setIsMobileOpen(false)}>Connect</Link>
                     <Link to="/earth-link" className="nav-link highlight" onClick={() => setIsMobileOpen(false)}>EarthLink</Link>
 

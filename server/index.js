@@ -738,14 +738,14 @@ app.get('/api/asteroids', async (req, res) => {
         const mockData = {
             element_count: 3,
             near_earth_objects: {
-                "2026-01-23": [
+                [startStr]: [
                     {
                         id: "MOCK_01",
                         name: "(SIMULATION) 2011 AG5",
                         is_potentially_hazardous_asteroid: true,
                         estimated_diameter: { kilometers: { estimated_diameter_min: 0.14, estimated_diameter_max: 0.23 } },
                         close_approach_data: [{
-                            close_approach_date: "2026-01-23",
+                            close_approach_date: startStr,
                             relative_velocity: { kilometers_per_hour: "54200" },
                             miss_distance: { kilometers: "1850000" }
                         }]
@@ -756,7 +756,7 @@ app.get('/api/asteroids', async (req, res) => {
                         is_potentially_hazardous_asteroid: false,
                         estimated_diameter: { kilometers: { estimated_diameter_min: 0.05, estimated_diameter_max: 0.08 } },
                         close_approach_data: [{
-                            close_approach_date: "2026-01-23",
+                            close_approach_date: startStr,
                             relative_velocity: { kilometers_per_hour: "42000" },
                             miss_distance: { kilometers: "32000000" }
                         }]
@@ -767,7 +767,7 @@ app.get('/api/asteroids', async (req, res) => {
                         is_potentially_hazardous_asteroid: true,
                         estimated_diameter: { kilometers: { estimated_diameter_min: 0.31, estimated_diameter_max: 0.45 } },
                         close_approach_data: [{
-                            close_approach_date: "2026-01-23",
+                            close_approach_date: startStr,
                             relative_velocity: { kilometers_per_hour: "108000" },
                             miss_distance: { kilometers: "31000" }
                         }]
