@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Rocket, Clock, Calendar, Globe, Satellite, Filter, ChevronRight, Play } from 'lucide-react';
 import SmartTerm from '../components/SmartTerm';
+import ApiStatusBanner from '../components/common/ApiStatusBanner';
 import './Missions.css';
 
 const Missions = () => {
@@ -9,6 +10,7 @@ const Missions = () => {
     const [filter, setFilter] = useState('ALL'); // ALL, SPACEX, ISRO, MOON, MARS
     const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
     const [loading, setLoading] = useState(true);
+    const [apiStatus, setApiStatus] = useState(null);
 
     const API_BASE = 'http://localhost:5002/api';
 
@@ -24,6 +26,9 @@ const Missions = () => {
 
                 const upcomingData = await upcomingRes.json();
                 const previousData = await previousRes.json();
+
+                if (upcomingData._api_status) setApiStatus(upcomingData._api_status);
+                else if (previousData._api_status) setApiStatus(previousData._api_status);
 
                 const upcoming = upcomingData.results || [];
                 const previous = previousData.results || [];
@@ -110,6 +115,7 @@ const Missions = () => {
                 <div className="launch-hero" style={{
                     backgroundImage: nextLaunch.image ? `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.9)), url(${nextLaunch.image})` : undefined
                 }}>
+                    <ApiStatusBanner status={apiStatus} />
                     <div className="hero-content">
                         <div className="badge-live">NEXT <SmartTerm term="Mission" /></div>
                         <h1 className="hero-title">{nextLaunch.name}</h1>

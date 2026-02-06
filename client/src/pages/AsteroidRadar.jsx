@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Info, AlertCircle, Calendar, Target, Shield, Gauge, Move, Globe, Orbit, Zap, Share2, Rocket, Radar, Database, Scale } from 'lucide-react';
 import SmartTerm from '../components/SmartTerm';
+import ApiStatusBanner from '../components/common/ApiStatusBanner';
 import './AsteroidRadar.css';
 
 const AsteroidRadar = () => {
@@ -10,6 +11,7 @@ const AsteroidRadar = () => {
     const [detailedData, setDetailedData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [loadingDetails, setLoadingDetails] = useState(false);
+    const [apiStatus, setApiStatus] = useState(null);
     const canvasRef = useRef(null);
 
     const API_BASE = 'http://localhost:5002/api';
@@ -21,6 +23,7 @@ const AsteroidRadar = () => {
                 const res = await fetch(`${API_BASE}/asteroids`);
                 if (!res.ok) throw new Error("NASA API unavailable");
                 const data = await res.json();
+                if (data._api_status) setApiStatus(data._api_status);
 
                 // Flatten NASA's dated dictionary into a single array
                 const neoData = data.near_earth_objects || {};
@@ -99,6 +102,7 @@ const AsteroidRadar = () => {
     return (
         <div className="asteroid-radar-container">
             <header className="radar-page-header">
+                <ApiStatusBanner status={apiStatus} />
                 <h1 className="page-title glow-text">
                     <SmartTerm term="Asteroid" display={<span className="text-gradient">Asteroid</span>} /> Radar
                 </h1>
@@ -180,7 +184,7 @@ const AsteroidRadar = () => {
                                     <div>
                                         <div className="label">Est. Diameter</div>
                                         <div className="value">
-                                            {selectedAsteroid.estimated_diameter.kilometers.estimated_diameter_min.toFixed(2)} - {selectedAsteroid.estimated_diameter.kilometers.estimated_diameter_max.toFixed(2)} km
+                                            {selectedAsteroid.estimated_diameter?.kilometers?.estimated_diameter_min?.toFixed(2) || '0.00'} - {selectedAsteroid.estimated_diameter?.kilometers?.estimated_diameter_max?.toFixed(2) || '0.00'} km
                                         </div>
                                     </div>
                                 </div>

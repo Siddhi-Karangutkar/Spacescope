@@ -30,7 +30,7 @@ const SpaceEvents = () => {
 
                 // Reverse geocode to get city name
                 try {
-                    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?latitude=${lat}&longitude=${lon}&count=1&language=en&format=json`);
+                    const geoRes = await fetch(`${API_BASE}/geocode?lat=${lat}&lon=${lon}`);
                     const geoData = await geoRes.json();
                     const cityName = geoData.results?.[0]?.name || 'Your Location';
 

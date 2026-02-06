@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import './CosmicWeather.css';
 import { Wind, Activity, Zap, Radio, AlertTriangle, ShieldAlert } from 'lucide-react';
 import SmartTerm from '../components/SmartTerm';
+import ApiStatusBanner from '../components/common/ApiStatusBanner';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 
 const CosmicWeather = () => {
@@ -13,6 +14,7 @@ const CosmicWeather = () => {
     const [kIndex, setKIndex] = useState(null);
     const [protonFlux, setProtonFlux] = useState(null);
     const [flares, setFlares] = useState([]);
+    const [apiStatus, setApiStatus] = useState(null);
     const [loading, setLoading] = useState(true);
     const [weatherStatus, setWeatherStatus] = useState({ status: 'Loading...', color: 'text-gray-400', message: 'Analyzing data...' });
     const [historicalData, setHistoricalData] = useState([]);
@@ -77,13 +79,23 @@ const CosmicWeather = () => {
                 if (!res.ok) throw new Error(`Stream ${key} offline`);
                 const data = await res.json();
 
+                if (data._api_status) {
+                    setApiStatus(prev => {
+                        // If current result is NOT live, it takes precedence (show degradation banner)
+                        if (!data._api_status.live) return data._api_status;
+                        // If current is live, only clear the banner if we don't have a previous 'not-live' status
+                        return (prev && !prev.live) ? prev : data._api_status;
+                    });
+                }
+
                 // Helper: Get latest valid data point
                 const getLatestValid = (arr, k) => {
-                    if (!arr || !Array.isArray(arr)) return null;
-                    for (let i = arr.length - 1; i >= 0; i--) {
-                        if (arr[i] && arr[i][k] !== undefined && arr[i][k] !== null) {
-                            if (k === 'speed' && parseFloat(arr[i][k]) <= 0) continue;
-                            return arr[i];
+                    const results = Array.isArray(arr) ? arr : (arr.results || []);
+                    if (!results || !Array.isArray(results)) return null;
+                    for (let i = results.length - 1; i >= 0; i--) {
+                        if (results[i] && results[i][k] !== undefined && results[i][k] !== null) {
+                            if (k === 'speed' && parseFloat(results[i][k]) <= 0) continue;
+                            return results[i];
                         }
                     }
                     return null;
@@ -109,7 +121,9 @@ const CosmicWeather = () => {
                 const res = await fetch(`${API_BASE}/solar-flares`);
                 if (res.ok) {
                     const data = await res.json();
-                    setFlares(Array.isArray(data) ? data.slice(0, 5) : []);
+                    if (data._api_status) setApiStatus(data._api_status);
+                    const flareResults = data.results || (Array.isArray(data) ? data : []);
+                    setFlares(flareResults.slice(0, 5));
                 }
             } catch (e) { console.warn("Flares failed"); }
 
@@ -148,6 +162,7 @@ const CosmicWeather = () => {
     return (
         <div className="cosmic-weather-container">
             <header className="weather-header">
+                <ApiStatusBanner status={apiStatus} />
                 <h1 className="page-title glow-text">Cosmic Weather Station</h1>
                 <div className={`status-banner glass-panel ${weatherStatus.color === 'text-red-500' ? 'border-red-500' : ''}`}>
                     <div className="status-main">
@@ -228,7 +243,7 @@ const CosmicWeather = () => {
                         <h3><SmartTerm term="Solar Wind" display="Solar Wind Speed" /></h3>
                     </div>
                     <div className="card-value">
-                        {solarWind?.speed ? Math.round(solarWind.speed) : '--'} <span className="unit">km/s</span>
+                        {(solarWind && solarWind.speed != null) ? Math.round(solarWind.speed) : '--'} <span className="unit">km/s</span>
                     </div>
                     <p className="card-desc">Higher speed (&gt;500 km/s) increases storm chance.</p>
                 </div>
@@ -240,7 +255,7 @@ const CosmicWeather = () => {
                         <h3><SmartTerm term="Solar Density" /></h3>
                     </div>
                     <div className="card-value">
-                        {solarWind?.density ? parseFloat(solarWind.density).toFixed(1) : '--'} <span className="unit">p/cm³</span>
+                        {(solarWind && solarWind.density != null) ? parseFloat(solarWind.density).toFixed(1) : '--'} <span className="unit">p/cm³</span>
                     </div>
                     <p className="card-desc">Particle density impacting magnetosphere.</p>
                 </div>
@@ -251,8 +266,8 @@ const CosmicWeather = () => {
                         <Zap className="card-icon" />
                         <h3><SmartTerm term="Magnetic Field" /> (<SmartTerm term="Bz" />)</h3>
                     </div>
-                    <div className={`card-value ${magField?.bz_gsm < 0 ? 'text-red-400' : 'text-green-400'}`}>
-                        {magField?.bz_gsm ? parseFloat(magField.bz_gsm).toFixed(1) : '--'} <span className="unit">nT</span>
+                    <div className={`card-value ${(magField && magField.bz_gsm < 0) ? 'text-red-400' : 'text-green-400'}`}>
+                        {(magField && magField.bz_gsm != null) ? parseFloat(magField.bz_gsm).toFixed(1) : '--'} <span className="unit">nT</span>
                     </div>
                     <p className="card-desc">Negative Bz allows energy into Earth's system.</p>
                 </div>
@@ -279,7 +294,7 @@ const CosmicWeather = () => {
                         <h3><SmartTerm term="Proton Flux" /></h3>
                     </div>
                     <div className="card-value">
-                        {protonFlux?.flux ? parseFloat(protonFlux.flux).toExponential(1) : '--'}
+                        {(protonFlux && protonFlux.flux != null) ? parseFloat(protonFlux.flux).toExponential(1) : '--'}
                     </div>
                     <p className="card-desc">Radiation hazard level for satellites.</p>
                 </div>

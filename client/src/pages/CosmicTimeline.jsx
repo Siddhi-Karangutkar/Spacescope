@@ -10,16 +10,16 @@ import './CosmicTimeline.css';
 
 // --- TEXTURE FALLBACKS & ASSETS (Wikimedia Real-Color) ---
 const TEXTURES = {
-    Mercury: 'https://upload.wikimedia.org/wikipedia/commons/3/30/Mercury_in_color_-_Prockter07_centered.jpg',
-    Venus: 'https://upload.wikimedia.org/wikipedia/commons/e/e5/Venus-real_color.jpg',
-    Earth: 'https://upload.wikimedia.org/wikipedia/commons/c/cf/Earth_as_seen_from_space_and_out_of_space.jpg',
-    Mars: 'https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg',
-    Jupiter: 'https://upload.wikimedia.org/wikipedia/commons/e/e2/Jupiter.jpg',
-    Saturn: 'https://upload.wikimedia.org/wikipedia/commons/c/c7/Saturn_during_Equinox.jpg',
-    SaturnRing: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/saturn_ring.png',
-    Uranus: 'https://upload.wikimedia.org/wikipedia/commons/3/3d/Uranus2.jpg',
-    Neptune: 'https://upload.wikimedia.org/wikipedia/commons/5/56/Neptune_Full.jpg',
-    Moon: 'https://upload.wikimedia.org/wikipedia/commons/e/e1/FullMoon2010.jpg'
+    Mercury: 'https://raw.githubusercontent.com/homer-jay/solar-system-textures/master/2k_mercury.jpg',
+    Venus: 'https://raw.githubusercontent.com/homer-jay/solar-system-textures/master/2k_venus_atmosphere.jpg',
+    Earth: 'https://raw.githubusercontent.com/homer-jay/solar-system-textures/master/2k_earth_daymap.jpg',
+    Mars: 'https://raw.githubusercontent.com/homer-jay/solar-system-textures/master/2k_mars.jpg',
+    Jupiter: 'https://raw.githubusercontent.com/homer-jay/solar-system-textures/master/2k_jupiter.jpg',
+    Saturn: 'https://raw.githubusercontent.com/homer-jay/solar-system-textures/master/2k_saturn.jpg',
+    SaturnRing: 'https://raw.githubusercontent.com/homer-jay/solar-system-textures/master/2k_saturn_ring_alpha.png',
+    Uranus: 'https://raw.githubusercontent.com/homer-jay/solar-system-textures/master/2k_uranus.jpg',
+    Neptune: 'https://raw.githubusercontent.com/homer-jay/solar-system-textures/master/2k_neptune.jpg',
+    Moon: 'https://raw.githubusercontent.com/homer-jay/solar-system-textures/master/2k_moon.jpg'
 };
 
 // Procedural texture generator for Sun
@@ -286,7 +286,7 @@ const Planet = ({ body, size, name, rings, hasMoon, color, date }) => {
         texture = useTexture(TEXTURES[name]);
         if (rings) ringTexture = useTexture(TEXTURES.SaturnRing);
     } catch (e) {
-        console.warn(`Texture failed for ${name}`);
+        // Fallback or silent failure
     }
 
     useFrame(() => {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Wind, Sun, Droplets, AlertTriangle, MapPin, Globe, Shield, CloudRain, Search, Navigation, Zap, Heart, Info, X } from 'lucide-react';
 import SmartTerm from '../components/SmartTerm';
+import ApiStatusBanner from '../components/common/ApiStatusBanner';
 import './EarthLink.css';
 
 const EarthLink = () => {
@@ -10,6 +11,7 @@ const EarthLink = () => {
     const [alerts, setAlerts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [gameMode, setGameMode] = useState(false);
+    const [apiStatus, setApiStatus] = useState(null);
 
     const API_BASE = 'http://localhost:5002/api';
 
@@ -72,6 +74,8 @@ const EarthLink = () => {
                 // 2. NASA EONET: Natural Events + Dummy Space Alerts
                 const eonetRes = await fetch(`${API_BASE}/eonet`);
                 const eonetData = await eonetRes.json();
+
+                if (eonetData._api_status) setApiStatus(eonetData._api_status);
 
                 const dummyAlerts = [
                     {
@@ -164,6 +168,7 @@ const EarthLink = () => {
 
     return (
         <div className="earth-link-container fade-in">
+            <ApiStatusBanner status={apiStatus} />
             <header className="earth-header text-center">
                 <h1 className="hero-title"><span className="text-gradient">EarthLink</span> Impact Engine</h1>
                 <p className="hero-subtitle"><SmartTerm term="Satellite" display="Satellite Intelligence" /> for <span className="text-white font-bold">{location.city}</span></p>
@@ -268,10 +273,10 @@ const EarthLink = () => {
                                 </div>
                                 <div className="alert-info">
                                     <h3>{alert.title}</h3>
-                                    <p className="alert-cat">{alert.categories[0]?.title}</p>
+                                    <p className="alert-cat">{alert.categories?.[0]?.title || 'Unknown Category'}</p>
                                     <p className="alert-coords">
                                         <MapPin size={14} />
-                                        {alert.geometries[0]?.coordinates ?
+                                        {alert.geometries?.[0]?.coordinates ?
                                             `${alert.geometries[0].coordinates[1].toFixed(2)}, ${alert.geometries[0].coordinates[0].toFixed(2)}`
                                             : 'Unknown Coords'}
                                     </p>

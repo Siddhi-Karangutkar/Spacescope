@@ -5,6 +5,7 @@ import LocationHistory from '../components/LocationHistory';
 import { MapContainer, TileLayer, ZoomControl, useMap } from 'react-leaflet';
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 import SmartTerm from '../components/SmartTerm';
+import ApiStatusBanner from '../components/common/ApiStatusBanner';
 import './SpaceRisk.css';
 import './EarthLink.css'; // Reuse Time Travel styles
 
@@ -16,6 +17,7 @@ const SpaceRisk = () => {
     const [globalRiskTrends, setGlobalRiskTrends] = useState([]);
     const [riskDistribution, setRiskDistribution] = useState([]);
     const [coordinates, setCoordinates] = useState(null);
+    const [apiStatus, setApiStatus] = useState(null);
 
     // Initialize mock data for charts
     useEffect(() => {
@@ -78,8 +80,15 @@ const SpaceRisk = () => {
             const kData = await kRes.json();
             const protonData = await protonRes.json();
 
-            const latestK = kData && kData.length > 0 ? kData[kData.length - 1].kp_index : 0;
-            const latestProton = protonData && protonData.length > 0 ? protonData[protonData.length - 1].flux : 0;
+            // Extract status from either response (standard logic across routes)
+            if (kData._api_status) setApiStatus(kData._api_status);
+            else if (protonData._api_status) setApiStatus(protonData._api_status);
+
+            const kResults = kData.results || [];
+            const protonResults = protonData.results || [];
+
+            const latestK = kResults.length > 0 ? kResults[kResults.length - 1].kp_index : 0;
+            const latestProton = protonResults.length > 0 ? protonResults[protonResults.length - 1].flux : 0;
 
             // 3. Risk Calculation Logic
             // Cyclone Risk: Based on Wind Speed (km/h)
@@ -127,6 +136,7 @@ const SpaceRisk = () => {
 
     return (
         <div className="space-risk-page">
+            <ApiStatusBanner status={apiStatus} />
             {/* Header */}
             <header className="space-risk-header">
                 <Link to="/dashboard" className="back-link">

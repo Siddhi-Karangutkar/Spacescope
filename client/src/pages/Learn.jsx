@@ -535,17 +535,14 @@ const PlanetExplorer = ({ onBack }) => {
         try {
             setIsPlaying(true);
 
-            // Use alternative NASA sound URLs that are more accessible
-            // Source: High-fidelity NASA Atmosphere & Plasma Recordings
+            // Source: Procedural Atmospheric Synthesis
+            // Note: External audio APIs (NASA/Archive.org/Wikimedia) are unreliable/unreachable.
+            // Using high-fidelity local synthesis for stability.
             const nasaSounds = {
-                'Mercury': 'https://archive.org/download/SymphoniesOfThePlanetsNASA/SymphoniesOfPlanetsTrack1.mp3',
-                'Venus': 'https://archive.org/download/SymphoniesOfThePlanetsNASA/SymphoniesOfPlanetsTrack2.mp3',   // Harsh atmospheric roar
-                'Earth': 'https://www.nasa.gov/wp-content/uploads/2015/01/earth_chorus.mp3',                      // Magnetosphere
-                'Mars': 'https://www.nasa.gov/wp-content/uploads/2021/02/perseverance_mars_surface_sounds.mp3',   // Real wind recorded on Mars
-                'Jupiter': 'https://www.nasa.gov/wp-content/uploads/2024/02/juno-jupiter-aurora-sounds.mp3',      // Intense storm sonification
-                'Saturn': 'https://www.nasa.gov/wp-content/uploads/2015/01/saturn_radio_emissions.mp3',            // Rings and lightning
-                'Uranus': 'https://archive.org/download/Voyager1PlanetarySounds/Uranus.mp3',
-                'Neptune': 'https://archive.org/download/Voyager1PlanetarySounds/Neptune.mp3'
+                // 'Earth': '/sounds/earth.ogg',
+                // 'Mars': '/sounds/mars.ogg',
+                // 'Jupiter': '/sounds/jupiter.ogg',
+                // 'Saturn': '/sounds/saturn.ogg',
             };
 
             // Create audio element with proper setup
@@ -553,6 +550,13 @@ const PlanetExplorer = ({ onBack }) => {
             audio.crossOrigin = "anonymous";
 
             try {
+                // Force synthesis for all planets if no stable URL exists
+                if (!nasaSounds[current.name]) {
+                    console.log(`Using atmospheric synthesis for ${current.name} (Source unavailable)`);
+                    playSynthesizedSound();
+                    return;
+                }
+
                 audio.src = nasaSounds[current.name];
 
                 audio.addEventListener('canplaythrough', () => {
@@ -716,7 +720,7 @@ const PlanetExplorer = ({ onBack }) => {
                             <div className="btn-icon">
                                 {isPlaying ? <Zap size={18} className="pulse" /> : '🔊'}
                             </div>
-                            <span>{isPlaying ? 'DECODING ATMosphere...' : 'LISTEN TO ATMOSPHERE'}</span>
+                            <span>{isPlaying ? 'GENERATING AUDIO...' : 'LISTEN (SIMULATION)'}</span>
                         </button>
                     </div>
 

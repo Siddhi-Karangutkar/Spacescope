@@ -10,6 +10,9 @@ dotenv.config();
 const emailService = require('./services/emailService');
 const verificationService = require('./services/verificationService');
 
+const NASA_API_KEY = process.env.NASA_API_KEY || 'DEMO_KEY';
+
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -367,14 +370,17 @@ app.delete('/api/instructors/:id', async (req, res) => {
 // --- SESSION MANAGEMENT APIS ---
 app.post('/api/instructor-login', async (req, res) => {
     const { email, accessCode } = req.body;
+    console.log(`Login attempt for: ${email} with code: ${accessCode}`);
     try {
         const result = await db.query(
             'SELECT * FROM instructors WHERE email = $1 AND access_code = $2',
             [email, accessCode]
         );
+        console.log(`Login Database Result: Found ${result.rows.length} users.`);
         if (result.rows.length > 0) {
             res.json(result.rows[0]);
         } else {
+            console.log('Login failed: Invalid credentials.');
             res.status(401).json({ error: 'Invalid credentials or non-verified access code.' });
         }
     } catch (err) {
@@ -580,6 +586,25 @@ app.post('/api/doubts/:id/replies', async (req, res) => {
     }
 });
 
+// --- FALLBACK DATA FOR RATE LIMITS ---
+const FALLBACK_FLARES = [
+    { flrID: "MOCK_FLR_001", beginTime: new Date().toISOString(), peakTime: new Date().toISOString(), classType: "C1.0", sourceLocation: "N15W20", notes: "Simulated flare data for system stability." },
+    { flrID: "MOCK_FLR_002", beginTime: new Date(Date.now() - 86400000).toISOString(), peakTime: new Date(Date.now() - 86400000).toISOString(), classType: "M2.4", sourceLocation: "S10E45", notes: "Simulated flare data for system stability." }
+];
+
+const FALLBACK_CME = [
+    { activityID: "MOCK_CME_001", startTime: new Date().toISOString(), sourceLocation: "N15W20", note: "Simulated CME data for system stability." }
+];
+
+const FALLBACK_ASTEROIDS = {
+    near_earth_objects: {
+        [new Date().toISOString().split('T')[0]]: [
+            { id: "MOCK_AST_01", name: "Simulated Asteroid Alpha", estimated_diameter: { kilometers: { estimated_diameter_min: 0.1, estimated_diameter_max: 0.5 } }, close_approach_data: [{ relative_velocity: { kilometers_per_hour: "45000" }, miss_distance: { kilometers: "1200000" } }], is_potentially_hazardous_asteroid: false }
+        ]
+    },
+    element_count: 1
+};
+
 // Helper to convert NOAA DSCOVR array-of-arrays to objects
 const formatDSCVR = (data) => {
     if (!data || !Array.isArray(data) || data.length < 2) return [];
@@ -589,6 +614,99 @@ const formatDSCVR = (data) => {
         headers.forEach((h, i) => obj[h] = row[i]);
         return obj;
     });
+};
+
+// --- API CACHING LOGIC ---
+const apiCache = {};
+
+// Generalized helper for proxying with caching
+const handleProxiedRequest = async (url, cacheKey, res, formatter = (d) => d, ttl = 3600000, fallback = null) => {
+    try {
+        const now = Date.now();
+
+        // --- PROACTIVE CACHE CHECK ---
+        if (apiCache[cacheKey]) {
+            const cacheAge = now - new Date(apiCache[cacheKey].timestamp).getTime();
+            if (cacheAge < ttl) {
+                console.log(`🚀 Serving proactive cache for [${cacheKey}] (${Math.round(cacheAge / 1000)}s old)`);
+                return res.json({
+                    ...apiCache[cacheKey].data,
+                    _api_status: {
+                        live: false,
+                        proactive: true,
+                        cached: true,
+                        timestamp: apiCache[cacheKey].timestamp
+                    }
+                });
+            }
+        }
+
+        const response = await axios.get(url, {
+            headers: { 'User-Agent': 'SpaceScope/1.0' },
+            timeout: 30000
+        });
+
+        const formattedData = formatter(response.data);
+
+        // Update cache
+        apiCache[cacheKey] = {
+            data: formattedData,
+            timestamp: new Date().toISOString()
+        };
+
+        res.json({
+            ...formattedData,
+            _api_status: { live: true, timestamp: apiCache[cacheKey].timestamp }
+        });
+    } catch (error) {
+        const isRateLimit = error.response && error.response.status === 429;
+
+        if (isRateLimit) {
+            console.warn(`🛑 Rate Limit Hit (429) for [${cacheKey}].`);
+        } else {
+            console.warn(`⚠️ API Error [${cacheKey}]:`, error.message);
+        }
+
+        if (apiCache[cacheKey]) {
+            console.log(`📡 Serving fallback cached data for [${cacheKey}]`);
+            return res.json({
+                ...apiCache[cacheKey].data,
+                _api_status: {
+                    live: false,
+                    cached: true,
+                    rate_limited: isRateLimit,
+                    timestamp: apiCache[cacheKey].timestamp,
+                    warning: isRateLimit
+                        ? "API rate limit reached. Showing last cached state for safety."
+                        : "Live data unavailable. Showing last cached state."
+                }
+            });
+        }
+
+        // --- FINAL SAFETY FALLBACK ---
+        if (fallback) {
+            console.log(`🛡️ Serving safety fallback for [${cacheKey}] (Cache empty + API Fail)`);
+            return res.json({
+                ...(Array.isArray(fallback) ? { results: fallback } : fallback),
+                _api_status: {
+                    live: false,
+                    cached: false,
+                    fallback: true,
+                    rate_limited: isRateLimit,
+                    timestamp: new Date().toISOString(),
+                    warning: "Using safety fallback data. API is rate-limited and no cache is available."
+                }
+            });
+        }
+
+        const status = isRateLimit ? 429 : 503;
+        res.status(status).json({
+            error: isRateLimit ? 'Rate Limit Exceeded' : 'Service Temporarily Unavailable',
+            message: isRateLimit
+                ? 'External API rate limit reached and no cached data is available. Please wait or provide a NASA_API_KEY.'
+                : 'Live API connection failed and no cached data is available.'
+        });
+    }
 };
 
 // Proxy Routes
@@ -602,182 +720,158 @@ const fetchNOAA = async (url) => {
 };
 
 app.get('/api/solar-wind', async (req, res) => {
-    try {
-        const response = await fetchNOAA('https://services.swpc.noaa.gov/products/solar-wind/plasma-5-minute.json');
-        res.json(formatDSCVR(response.data));
-    } catch (error) {
-        console.error('Error fetching solar wind:', error.message);
-        res.status(500).json({ error: 'Failed to fetch solar wind data', message: error.message });
-    }
+    await handleProxiedRequest(
+        'https://services.swpc.noaa.gov/products/solar-wind/plasma-5-minute.json',
+        'solar-wind',
+        res,
+        (data) => ({ results: formatDSCVR(data) })
+    );
 });
 
 app.get('/api/magnetic-field', async (req, res) => {
-    try {
-        const response = await fetchNOAA('https://services.swpc.noaa.gov/products/solar-wind/mag-5-minute.json');
-        res.json(formatDSCVR(response.data));
-    } catch (error) {
-        console.error('Error fetching magnetic field:', error.message);
-        res.status(500).json({ error: 'Failed to fetch magnetic field data', message: error.message });
-    }
+    await handleProxiedRequest(
+        'https://services.swpc.noaa.gov/products/solar-wind/mag-5-minute.json',
+        'magnetic-field',
+        res,
+        (data) => ({ results: formatDSCVR(data) })
+    );
 });
 
 app.get('/api/k-index', async (req, res) => {
-    try {
-        const response = await fetchNOAA('https://services.swpc.noaa.gov/json/planetary_k_index_1m.json');
-        res.json(response.data);
-    } catch (error) {
-        console.error('Error fetching K-index:', error.message);
-        res.status(500).json({ error: 'Failed to fetch K-index data', message: error.message });
-    }
+    await handleProxiedRequest(
+        'https://services.swpc.noaa.gov/json/planetary_k_index_1m.json',
+        'k-index',
+        res,
+        (data) => ({ results: data })
+    );
 });
 
 app.get('/api/proton-flux', async (req, res) => {
-    try {
-        const response = await fetchNOAA('https://services.swpc.noaa.gov/json/goes/primary/integral-protons-1-day.json');
-        res.json(response.data);
-    } catch (error) {
-        console.error('Error fetching proton flux:', error.message);
-        res.status(500).json({ error: 'Failed to fetch proton flux data' });
-    }
+    await handleProxiedRequest(
+        'https://services.swpc.noaa.gov/json/goes/primary/integral-protons-1-day.json',
+        'proton-flux-v2',
+        res,
+        (data) => ({ results: data })
+    );
 });
 
 app.get('/api/solar-flares', async (req, res) => {
-    try {
-        const now = new Date();
-        const endDate = now.toISOString().split('T')[0];
-        const startDate = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0];
-        const response = await fetchNOAA(`https://kauai.ccmc.gsfc.nasa.gov/DONKI/FLR?startDate=${startDate}&endDate=${endDate}`);
-        res.json(response.data);
-    } catch (error) {
-        if (error.response && error.response.status === 404) {
-            // Silently handle 404 (NASA API temporarily unavailable)
-        } else {
-            console.warn('Error fetching solar flares:', error.message);
-        }
-        // Return empty array instead of error - flares are optional
-        res.json([]);
-    }
+    const now = new Date();
+    const endDate = now.toISOString().split('T')[0];
+    const startDate = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0];
+
+    await handleProxiedRequest(
+        'https://services.swpc.noaa.gov/json/goes/primary/xray-flares-7-day.json',
+        'solar-flares-v2',
+        res,
+        (data) => {
+            if (!Array.isArray(data)) return { results: [] };
+            const formatted = data.map((flare, index) => ({
+                flrID: `NOAA-${flare.time_tag || index}`,
+                beginTime: flare.begin_time,
+                peakTime: flare.max_time,
+                endTime: flare.end_time,
+                classType: flare.max_class,
+                sourceLocation: "N/A", // NOAA simple JSON doesn't provide location
+                notes: `Source: NOAA GOES-${flare.satellite} X-Ray Sensor.`
+            }));
+            return { results: formatted };
+        },
+        3600000,
+        FALLBACK_FLARES
+    );
 });
 
 app.get('/api/cme', async (req, res) => {
-    try {
-        const endDate = new Date().toISOString().split('T')[0];
-        const startDate = new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split('T')[0];
-        const response = await axios.get(`https://kauai.ccmc.gsfc.nasa.gov/DONKI/CME?startDate=${startDate}&endDate=${endDate}`);
-        res.json(response.data);
-    } catch (error) {
-        console.error('Error fetching CME:', error.message);
-        res.status(500).json({ error: 'Failed to fetch CME data' });
-    }
+    const endDate = new Date().toISOString().split('T')[0];
+    const startDate = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
+
+    await handleProxiedRequest(
+        `https://api.nasa.gov/DONKI/CME?startDate=${startDate}&endDate=${endDate}&api_key=${NASA_API_KEY}`,
+        'cme-v2',
+        res,
+        (d) => ({ results: d }),
+        3600000,
+        FALLBACK_CME
+    );
 });
 
 // ISS Proxies
 app.get('/api/iss-now', async (req, res) => {
-    try {
-        // Switching to wheretheiss.at for better reliability
-        const response = await axios.get('https://api.wheretheiss.at/v1/satellites/25544');
-        // Map to expected format if needed, but the original frontend might expect open-notify format
-        // Open-notify: { iss_position: { latitude, longitude }, message: "success", timestamp: ... }
-        // Wheretheiss: { latitude, longitude, ... }
-        const data = response.data;
-        res.json({
+    await handleProxiedRequest(
+        'https://api.wheretheiss.at/v1/satellites/25544',
+        'iss-now',
+        res,
+        (data) => ({
             iss_position: {
                 latitude: data.latitude.toString(),
                 longitude: data.longitude.toString()
             },
             message: "success",
             timestamp: data.timestamp
-        });
-    } catch (error) {
-        console.error('Error fetching ISS position:', error.message);
-        res.status(500).json({ error: 'Failed to fetch ISS position' });
-    }
+        })
+    );
 });
 
 app.get('/api/iss-pass', async (req, res) => {
-    try {
-        const { lat, lon } = req.query;
-        if (!lat || !lon) return res.status(400).json({ error: 'Latitude and Longitude required' });
+    const { lat, lon } = req.query;
+    if (!lat || !lon) return res.status(400).json({ error: 'Latitude and Longitude required' });
 
-        const response = await axios.get(`http://api.open-notify.org/iss-pass.json?lat=${lat}&lon=${lon}`);
-        res.json(response.data);
-    } catch (error) {
-        console.error('Error fetching ISS pass:', error.message);
-        // Return 503 to signal service unavailability specifically
-        res.status(503).json({ error: 'ISS Pass prediction service is currently offline' });
-    }
+    const cacheKey = `iss-pass-${lat}-${lon}`;
+
+    // Generate fresh simulated data for fallback
+    const simulatedPasses = [
+        { risetime: Math.floor(Date.now() / 1000) + 3600, duration: 450 },
+        { risetime: Math.floor(Date.now() / 1000) + 7200, duration: 380 },
+        { risetime: Math.floor(Date.now() / 1000) + 10800, duration: 520 }
+    ];
+
+    await handleProxiedRequest(
+        `http://api.open-notify.org/iss-pass.json?lat=${lat}&lon=${lon}`,
+        cacheKey,
+        res,
+        (d) => d,
+        3600000,
+        { response: simulatedPasses }
+    );
 });
 
 // Meteor Shower Proxy
 app.get('/api/meteor-showers', async (req, res) => {
-    try {
-        const response = await axios.get('https://raw.githubusercontent.com/astronexus/MeteorShowerCatalog/master/catalog.json');
-        res.json(response.data);
-    } catch (error) {
-        console.error('Error fetching meteor showers:', error.message);
-        res.status(500).json({ error: 'Failed to fetch meteor shower data' });
-    }
+    const localMeteorShowers = [
+        { name: "Quadrantids", peak: "January 4", rate: "120/hr" },
+        { name: "Lyrids", peak: "April 22", rate: "18/hr" },
+        { name: "Eta Aquariids", peak: "May 5", rate: "50/hr" },
+        { name: "Perseids", peak: "August 12", rate: "100/hr" },
+        { name: "Orionids", peak: "October 21", rate: "20/hr" },
+        { name: "Leonids", peak: "November 17", rate: "15/hr" },
+        { name: "Geminids", peak: "December 14", rate: "150/hr" },
+        { name: "Ursids", peak: "December 22", rate: "10/hr" }
+    ];
+
+    await handleProxiedRequest(
+        'https://raw.githubusercontent.com/astronexus/MeteorShowerCatalog/master/catalog.json',
+        'meteor-showers',
+        res,
+        (d) => d,
+        3600000,
+        localMeteorShowers
+    );
 });
 
 // Asteroid Proxy (NeoWS Feed)
 app.get('/api/asteroids', async (req, res) => {
-    try {
-        const today = new Date();
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
+    const today = new Date().toISOString().split('T')[0];
+    const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
 
-        const startStr = today.toISOString().split('T')[0];
-        const endStr = tomorrow.toISOString().split('T')[0];
-
-        // Fetching today and tomorrow for a better radar view
-        const response = await axios.get(`https://api.nasa.gov/neo/rest/v1/feed?start_date=${startStr}&end_date=${endStr}&api_key=DEMO_KEY`);
-        res.json(response.data);
-    } catch (error) {
-        console.warn('NASA API Throttled, providing simulation data');
-        // Fallback to simulation data instead of empty objects
-        const mockData = {
-            element_count: 3,
-            near_earth_objects: {
-                [startStr]: [
-                    {
-                        id: "MOCK_01",
-                        name: "(SIMULATION) 2011 AG5",
-                        is_potentially_hazardous_asteroid: true,
-                        estimated_diameter: { kilometers: { estimated_diameter_min: 0.14, estimated_diameter_max: 0.23 } },
-                        close_approach_data: [{
-                            close_approach_date: startStr,
-                            relative_velocity: { kilometers_per_hour: "54200" },
-                            miss_distance: { kilometers: "1850000" }
-                        }]
-                    },
-                    {
-                        id: "MOCK_02",
-                        name: "(SIMULATION) 2024 BX1",
-                        is_potentially_hazardous_asteroid: false,
-                        estimated_diameter: { kilometers: { estimated_diameter_min: 0.05, estimated_diameter_max: 0.08 } },
-                        close_approach_data: [{
-                            close_approach_date: startStr,
-                            relative_velocity: { kilometers_per_hour: "42000" },
-                            miss_distance: { kilometers: "32000000" }
-                        }]
-                    },
-                    {
-                        id: "MOCK_03",
-                        name: "(SIMULATION) Apophis",
-                        is_potentially_hazardous_asteroid: true,
-                        estimated_diameter: { kilometers: { estimated_diameter_min: 0.31, estimated_diameter_max: 0.45 } },
-                        close_approach_data: [{
-                            close_approach_date: startStr,
-                            relative_velocity: { kilometers_per_hour: "108000" },
-                            miss_distance: { kilometers: "31000" }
-                        }]
-                    }
-                ]
-            },
-            status: "Simulation Mode (NASA API Throttled)"
-        };
-        res.status(200).json(mockData);
-    }
+    await handleProxiedRequest(
+        `https://api.nasa.gov/neo/rest/v1/feed?start_date=${today}&end_date=${tomorrow}&api_key=${NASA_API_KEY}`,
+        'asteroids',
+        res,
+        (d) => d,
+        3600000,
+        FALLBACK_ASTEROIDS
+    );
 });
 
 // Asteroid Lookup Proxy (Specific ID)
@@ -796,7 +890,7 @@ app.get('/api/asteroid/:id', async (req, res) => {
                 }
             });
         }
-        const response = await axios.get(`https://api.nasa.gov/neo/rest/v1/neo/${id}?api_key=DEMO_KEY`);
+        const response = await axios.get(`https://api.nasa.gov/neo/rest/v1/neo/${id}?api_key=${NASA_API_KEY}`);
         res.json(response.data);
     } catch (error) {
         console.error(`Error fetching asteroid ${req.params.id}:`, error.message);
@@ -806,70 +900,54 @@ app.get('/api/asteroid/:id', async (req, res) => {
 
 // Space Launch Proxy (The Space Devs LL2)
 app.get('/api/launches/upcoming', async (req, res) => {
-    try {
-        const response = await axios.get('https://lldev.thespacedevs.com/2.2.0/launch/upcoming/?limit=10');
-        res.json(response.data);
-    } catch (error) {
-        console.warn('Upcoming launches throttled, using simulation');
-        res.json({
-            results: [
-                {
-                    id: 'u-sim-1',
-                    name: '(SIMULATION) Artemis II',
-                    status: { name: 'Scheduled' },
-                    net: '2025-09-01T12:00:00Z',
-                    mission: { description: 'First crewed flight of SLS/Orion around the Moon.', type: 'Lunar' },
-                    launch_service_provider: { name: 'NASA' },
-                    pad: { location: { name: 'Kennedy Space Center, FL' } },
-                    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Artemis_1_launch_SLS_liftoff_closeup.jpg/800px-Artemis_1_launch_SLS_liftoff_closeup.jpg'
-                }
-            ]
-        });
-    }
+    await handleProxiedRequest(
+        'https://lldev.thespacedevs.com/2.2.0/launch/upcoming/?limit=10',
+        'launches-upcoming',
+        res
+    );
 });
 
 app.get('/api/launches/previous', async (req, res) => {
-    try {
-        const response = await axios.get('https://lldev.thespacedevs.com/2.2.0/launch/previous/?limit=10');
-        res.json(response.data);
-    } catch (error) {
-        console.warn('Previous launches throttled, using simulation');
-        res.json({
-            results: [
-                {
-                    id: 'p-sim-1',
-                    name: '(SIMULATION) Chandrayaan-3',
-                    status: { name: 'Success' },
-                    net: '2023-07-14T09:05:00Z',
-                    mission: { description: 'ISRO\'s third lunar exploration mission.', type: 'Lunar' },
-                    launch_service_provider: { name: 'ISRO' },
-                    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Chandrayaan-3_Launch.jpg/800px-Chandrayaan-3_Launch.jpg'
-                }
-            ]
-        });
-    }
+    await handleProxiedRequest(
+        'https://lldev.thespacedevs.com/2.2.0/launch/previous/?limit=10',
+        'launches-previous',
+        res
+    );
 });
 
 app.get('/api/space-events', async (req, res) => {
-    try {
-        const response = await axios.get('https://lldev.thespacedevs.com/2.2.0/event/upcoming/?limit=5');
-        res.json(response.data);
-    } catch (error) {
-        res.json({ results: [] });
-    }
+    await handleProxiedRequest(
+        'https://lldev.thespacedevs.com/2.2.0/event/upcoming/?limit=5',
+        'space-events',
+        res
+    );
 });
 
 // NASA EONET Proxy (Natural Events)
 app.get('/api/eonet', async (req, res) => {
-    try {
-        // Fetch active events (limit to recent days if needed, but default is active)
-        const response = await axios.get('https://eonet.gsfc.nasa.gov/api/v2.1/events?status=open&limit=20');
-        res.json(response.data);
-    } catch (error) {
-        console.error('Error fetching EONET data:', error.message);
-        res.status(500).json({ error: 'Failed to fetch natural events' });
-    }
+    await handleProxiedRequest(
+        'https://eonet.gsfc.nasa.gov/api/v3/events',
+        'eonet',
+        res
+    );
 });
+
+// Geocoding Proxy (Open-Meteo) to fix CORS
+app.get('/api/geocode', async (req, res) => {
+    const { lat, lon } = req.query;
+    if (!lat || !lon) return res.status(400).json({ error: 'Latitude and Longitude required' });
+
+    // Forward to Open-Meteo Reverse Geocoding
+    await handleProxiedRequest(
+        `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&count=1&language=en&format=json`,
+        `geocode-${lat}-${lon}`,
+        res,
+        (d) => d,
+        86400000, // 24 hour cache
+        { results: [{ name: "Location (Offline)" }] }
+    );
+});
+
 
 // Socket.io for SpaceScope Meet & Real-time Chat
 const rooms = {};
