@@ -735,12 +735,6 @@ const TimeTravelMode = ({ location, currentData }) => {
                         <Globe size={18} /> Overview
                     </button>
                     <button
-                        className={viewMode === 'map' ? 'active' : ''}
-                        onClick={() => setViewMode('map')}
-                    >
-                        <Satellite size={18} /> Temporal Map
-                    </button>
-                    <button
                         className={viewMode === 'trends' ? 'active' : ''}
                         onClick={() => setViewMode('trends')}
                     >
@@ -933,65 +927,6 @@ const TimeTravelMode = ({ location, currentData }) => {
                                 </div>
                             )}
 
-                            {viewMode === 'map' && (
-                                <div className="temporal-analysis-map-view fade-in">
-                                    <div className="map-intro-panel glass-panel">
-                                        <div className="intro-badge">SATELLITE TELEMETRY MODE</div>
-                                        <h3>Decadal Surface Mapping: {selectedYear}</h3>
-                                        <p>Analyzing {selectedInfo || 'Atmospheric Changes'} via NASA GIBS Archives.</p>
-                                    </div>
-
-                                    <div className="temporal-map-main-container glass-panel">
-                                        <div className={`map-canvas-wrapper ${selectedYear > currentYear ? 'future-sim' : ''} ${selectedYear < 2000 ? 'historical-archive' : ''}`}>
-                                            <MapContainer
-                                                center={[location.lat || 20, location.lon || 78]}
-                                                zoom={4}
-                                                className="temporal-leaflet-map"
-                                                zoomControl={false}
-                                            >
-                                                <ZoomControl position="bottomright" />
-                                                <MapUpdater center={[location.lat || 20, location.lon || 78]} />
-
-                                                <TileLayer
-                                                    url={`https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/${Math.max(2000, Math.min(2025, selectedYear))}-09-15/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`}
-                                                    attribution="NASA GIBS"
-                                                />
-
-                                                {/* Overlay for Future or Past stress */}
-                                                <TileLayer
-                                                    url="https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png"
-                                                    opacity={0.6}
-                                                />
-                                            </MapContainer>
-
-                                            {/* Scanned Data Overlay */}
-                                            <div className="map-stats-overlay">
-                                                <div className="scan-line"></div>
-                                                <div className="overlay-data">
-                                                    <div className="data-bit">LAT: {location.lat?.toFixed(2)}</div>
-                                                    <div className="data-bit">LON: {location.lon?.toFixed(2)}</div>
-                                                    <div className="data-bit">TS: {selectedYear}-09-15</div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="map-legend-panel">
-                                            <div className="legend-item">
-                                                <div className="legend-color bg-green"></div>
-                                                <span>Safe Threshold</span>
-                                            </div>
-                                            <div className="legend-item">
-                                                <div className="legend-color bg-yellow"></div>
-                                                <span>Moderate Risk</span>
-                                            </div>
-                                            <div className="legend-item">
-                                                <div className="legend-color bg-red"></div>
-                                                <span>Critical Anomaly</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
 
                             {viewMode === 'trends' && (
                                 <div className="trends-view">
@@ -1076,114 +1011,116 @@ const TimeTravelMode = ({ location, currentData }) => {
             </div>
 
             {/* Info Modal - Moved outside container to avoid overflow issues */}
-            {selectedInfo && (
-                <div className="param-info-modal" onClick={() => setSelectedInfo(null)}>
-                    <div className="param-info-content" onClick={(e) => e.stopPropagation()}>
-                        <button className="close-param-info" onClick={() => setSelectedInfo(null)}>
-                            <X size={24} />
-                        </button>
-
-                        {(() => {
-                            if (selectedInfo.startsWith('milestone-')) {
-                                const index = parseInt(selectedInfo.split('-')[1]);
-                                const milestone = milestones[index];
-
-                                if (!milestone || !milestone.details) return null;
-
-                                return (
-                                    <>
-                                        <div className="param-info-header">
-                                            <span className="param-icon">{milestone.icon}</span>
-                                            <h2>{milestone.title}</h2>
-                                        </div>
-
-                                        <div className="param-info-body">
-                                            <div className="info-section">
-                                                <h3>🚀 Mission Overview</h3>
-                                                <p>{milestone.description}</p>
-                                                <p style={{ marginTop: '0.5rem', fontStyle: 'italic' }}>{milestone.details.mission}</p>
-                                            </div>
-
-                                            <div className="info-section">
-                                                <h3>📋 Key Details</h3>
-                                                <div className="interpretation-list">
-                                                    <div className="interpretation-item">
-                                                        <span className="interpretation-bullet">•</span>
-                                                        <span><strong>Agency:</strong> {milestone.details.agency}</span>
-                                                    </div>
-                                                    <div className="interpretation-item">
-                                                        <span className="interpretation-bullet">•</span>
-                                                        <span><strong>Launch Date:</strong> {milestone.details.launchDate}</span>
-                                                    </div>
-                                                    <div className="interpretation-item">
-                                                        <span className="interpretation-bullet">•</span>
-                                                        <span><strong>Instruments:</strong> {milestone.details.instruments}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="info-section">
-                                                <h3>🌍 Earth Science Impact</h3>
-                                                <p>{milestone.details.impact}</p>
-                                            </div>
-                                        </div>
-                                    </>
-                                );
-                            }
-
-                            const param = parameterInfo[selectedInfo];
-                            if (param) {
-                                return (
-                                    <>
-                                        <div className="param-info-header">
-                                            <span className="param-icon">{param.icon}</span>
-                                            <h2>{param.title}</h2>
-                                        </div>
-
-                                        <div className="param-info-body">
-                                            <div className="info-section">
-                                                <h3>📖 What is this?</h3>
-                                                <p>{param.description}</p>
-                                            </div>
-
-                                            <div className="info-section">
-                                                <h3>🛰️ How Satellites Measure It</h3>
-                                                <p>{param.satellite}</p>
-                                            </div>
-
-                                            <div className="info-section">
-                                                <h3>🌾 Agricultural Significance</h3>
-                                                <p>{param.agriculture}</p>
-                                            </div>
-
-                                            <div className="info-section">
-                                                <h3>📊 Interpretation Guide</h3>
-                                                <div className="interpretation-list">
-                                                    {Object.entries(param.interpretation).map(([key, value]) => (
-                                                        <div key={key} className="interpretation-item">
-                                                            <span className="interpretation-bullet">•</span>
-                                                            <span>{value}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </>
-                                );
-                            }
-
-                            return null;
-                        })()}
-
-                        <div className="param-info-footer">
-                            <button className="understand-btn" onClick={() => setSelectedInfo(null)}>
-                                Got it!
+            {
+                selectedInfo && (
+                    <div className="param-info-modal" onClick={() => setSelectedInfo(null)}>
+                        <div className="param-info-content" onClick={(e) => e.stopPropagation()}>
+                            <button className="close-param-info" onClick={() => setSelectedInfo(null)}>
+                                <X size={24} />
                             </button>
+
+                            {(() => {
+                                if (selectedInfo.startsWith('milestone-')) {
+                                    const index = parseInt(selectedInfo.split('-')[1]);
+                                    const milestone = milestones[index];
+
+                                    if (!milestone || !milestone.details) return null;
+
+                                    return (
+                                        <>
+                                            <div className="param-info-header">
+                                                <span className="param-icon">{milestone.icon}</span>
+                                                <h2>{milestone.title}</h2>
+                                            </div>
+
+                                            <div className="param-info-body">
+                                                <div className="info-section">
+                                                    <h3>🚀 Mission Overview</h3>
+                                                    <p>{milestone.description}</p>
+                                                    <p style={{ marginTop: '0.5rem', fontStyle: 'italic' }}>{milestone.details.mission}</p>
+                                                </div>
+
+                                                <div className="info-section">
+                                                    <h3>📋 Key Details</h3>
+                                                    <div className="interpretation-list">
+                                                        <div className="interpretation-item">
+                                                            <span className="interpretation-bullet">•</span>
+                                                            <span><strong>Agency:</strong> {milestone.details.agency}</span>
+                                                        </div>
+                                                        <div className="interpretation-item">
+                                                            <span className="interpretation-bullet">•</span>
+                                                            <span><strong>Launch Date:</strong> {milestone.details.launchDate}</span>
+                                                        </div>
+                                                        <div className="interpretation-item">
+                                                            <span className="interpretation-bullet">•</span>
+                                                            <span><strong>Instruments:</strong> {milestone.details.instruments}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="info-section">
+                                                    <h3>🌍 Earth Science Impact</h3>
+                                                    <p>{milestone.details.impact}</p>
+                                                </div>
+                                            </div>
+                                        </>
+                                    );
+                                }
+
+                                const param = parameterInfo[selectedInfo];
+                                if (param) {
+                                    return (
+                                        <>
+                                            <div className="param-info-header">
+                                                <span className="param-icon">{param.icon}</span>
+                                                <h2>{param.title}</h2>
+                                            </div>
+
+                                            <div className="param-info-body">
+                                                <div className="info-section">
+                                                    <h3>📖 What is this?</h3>
+                                                    <p>{param.description}</p>
+                                                </div>
+
+                                                <div className="info-section">
+                                                    <h3>🛰️ How Satellites Measure It</h3>
+                                                    <p>{param.satellite}</p>
+                                                </div>
+
+                                                <div className="info-section">
+                                                    <h3>🌾 Agricultural Significance</h3>
+                                                    <p>{param.agriculture}</p>
+                                                </div>
+
+                                                <div className="info-section">
+                                                    <h3>📊 Interpretation Guide</h3>
+                                                    <div className="interpretation-list">
+                                                        {Object.entries(param.interpretation).map(([key, value]) => (
+                                                            <div key={key} className="interpretation-item">
+                                                                <span className="interpretation-bullet">•</span>
+                                                                <span>{value}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </>
+                                    );
+                                }
+
+                                return null;
+                            })()}
+
+                            <div className="param-info-footer">
+                                <button className="understand-btn" onClick={() => setSelectedInfo(null)}>
+                                    Got it!
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
 

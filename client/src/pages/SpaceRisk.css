@@ -577,7 +577,7 @@
 }
 
 .theme-purple:hover {
-    border-color: rgba(168, 85, 247, 0.3);
+    border-color: rgba(6, 182, 212, 0.3);
 }
 
 .icon-wrapper {
@@ -661,11 +661,11 @@
 }
 
 .text-purple {
-    color: #c084fc;
+    color: #22d3ee;
 }
 
 .bg-purple {
-    background-color: #c084fc;
+    background-color: #22d3ee;
 }
 
 .factor-label {
